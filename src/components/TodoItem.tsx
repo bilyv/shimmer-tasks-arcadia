@@ -4,7 +4,7 @@ import { Todo, Priority } from "@/types/todo";
 import { useTodo } from "@/contexts/TodoContext";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
-import { Check, Trash2, Edit, Calendar, AlertCircle } from "lucide-react";
+import { Check, Trash2, Edit, Calendar, AlertCircle, ChevronDown, ChevronUp } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   DropdownMenu,
@@ -15,6 +15,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { TodoDialog } from "./TodoDialog";
+import { SubtaskManager } from "./SubtaskManager";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 interface TodoItemProps {
   todo: Todo;
@@ -24,6 +26,7 @@ interface TodoItemProps {
 export function TodoItem({ todo, categoryColor }: TodoItemProps) {
   const { toggleTodoCompletion, deleteTodo } = useTodo();
   const [showEditDialog, setShowEditDialog] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
 
   const handleToggle = () => {
     toggleTodoCompletion(todo.id);
@@ -49,6 +52,9 @@ export function TodoItem({ todo, categoryColor }: TodoItemProps) {
   const getPriorityLabel = (priority: Priority) => {
     return priority.charAt(0).toUpperCase() + priority.slice(1);
   };
+  
+  const completedSubtasks = todo.subtasks.filter(st => st.completed).length;
+  const hasSubtasks = todo.subtasks.length > 0;
 
   return (
     <>
@@ -144,6 +150,24 @@ export function TodoItem({ todo, categoryColor }: TodoItemProps) {
               >
                 {todo.description}
               </p>
+            )}
+            
+            {hasSubtasks && (
+              <Collapsible open={isOpen} onOpenChange={setIsOpen} className="my-2">
+                <div className="flex items-center justify-between">
+                  <div className="text-xs text-muted-foreground">
+                    Subtasks: {completedSubtasks}/{todo.subtasks.length}
+                  </div>
+                  <CollapsibleTrigger asChild>
+                    <Button variant="ghost" size="sm" className="p-0 h-5 w-5">
+                      {isOpen ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+                    </Button>
+                  </CollapsibleTrigger>
+                </div>
+                <CollapsibleContent className="mt-2">
+                  <SubtaskManager todoId={todo.id} subtasks={todo.subtasks} />
+                </CollapsibleContent>
+              </Collapsible>
             )}
             
             <div className="flex flex-wrap items-center gap-3 mt-2 text-xs text-muted-foreground">

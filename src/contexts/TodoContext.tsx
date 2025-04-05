@@ -1,12 +1,11 @@
-
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { Todo, Category, Priority, DEFAULT_CATEGORIES } from "@/types/todo";
+import { Todo, SubTask, Category, Priority, DEFAULT_CATEGORIES } from "@/types/todo";
 import { useToast } from "@/hooks/use-toast";
 
 interface TodoContextType {
   todos: Todo[];
   categories: Category[];
-  addTodo: (todo: Omit<Todo, "id" | "createdAt" | "updatedAt">) => void;
+  addTodo: (todo: Omit<Todo, "id" | "createdAt" | "updatedAt" | "subtasks">) => void;
   updateTodo: (id: string, todo: Partial<Todo>) => void;
   deleteTodo: (id: string) => void;
   toggleTodoCompletion: (id: string) => void;
@@ -19,6 +18,10 @@ interface TodoContextType {
   getTodosByCategory: (categoryId: string) => Todo[];
   filterTodos: (searchQuery: string, categoryId?: string, showCompleted?: boolean) => Todo[];
   reorderTodo: (fromIndex: number, toIndex: number) => void;
+  addSubtask: (todoId: string, subtaskTitle: string) => void;
+  updateSubtask: (todoId: string, subtaskId: string, updates: Partial<SubTask>) => void;
+  deleteSubtask: (todoId: string, subtaskId: string) => void;
+  toggleSubtaskCompletion: (todoId: string, subtaskId: string) => void;
 }
 
 const TodoContext = createContext<TodoContextType | undefined>(undefined);
@@ -34,6 +37,7 @@ export const TodoProvider: React.FC<{ children: React.ReactNode }> = ({ children
           createdAt: new Date(todo.createdAt),
           updatedAt: new Date(todo.updatedAt),
           dueDate: todo.dueDate ? new Date(todo.dueDate) : null,
+          subtasks: todo.subtasks || [],
         }));
       } catch (e) {
         console.error("Failed to parse saved todos", e);
@@ -56,12 +60,13 @@ export const TodoProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.setItem("categories", JSON.stringify(categories));
   }, [categories]);
 
-  const addTodo = (todo: Omit<Todo, "id" | "createdAt" | "updatedAt">) => {
+  const addTodo = (todo: Omit<Todo, "id" | "createdAt" | "updatedAt" | "subtasks">) => {
     const newTodo: Todo = {
       ...todo,
       id: crypto.randomUUID(),
       createdAt: new Date(),
       updatedAt: new Date(),
+      subtasks: [],
     };
     setTodos((prevTodos) => [newTodo, ...prevTodos]);
     toast({
@@ -121,7 +126,6 @@ export const TodoProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const deleteCategory = (id: string) => {
-    // Check if there are todos in this category
     const todosInCategory = todos.filter(t => t.categoryId === id);
     
     if (todosInCategory.length > 0) {
@@ -196,6 +200,78 @@ export const TodoProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
   };
 
+  const addSubtask = (todoId: string, subtaskTitle: string) => {
+    if (!subtaskTitle.trim()) return;
+    
+    const newSubtask: SubTask = {
+      id: crypto.randomUUID(),
+      title: subtaskTitle,
+      completed: false,
+    };
+    
+    setTodos((prevTodos) =>
+      prevTodos.map((todo) =>
+        todo.id === todoId
+          ? {
+              ...todo,
+              subtasks: [...todo.subtasks, newSubtask],
+              updatedAt: new Date(),
+            }
+          : todo
+      )
+    );
+  };
+
+  const updateSubtask = (todoId: string, subtaskId: string, updates: Partial<SubTask>) => {
+    setTodos((prevTodos) =>
+      prevTodos.map((todo) =>
+        todo.id === todoId
+          ? {
+              ...todo,
+              subtasks: todo.subtasks.map((subtask) =>
+                subtask.id === subtaskId
+                  ? { ...subtask, ...updates }
+                  : subtask
+              ),
+              updatedAt: new Date(),
+            }
+          : todo
+      )
+    );
+  };
+
+  const deleteSubtask = (todoId: string, subtaskId: string) => {
+    setTodos((prevTodos) =>
+      prevTodos.map((todo) =>
+        todo.id === todoId
+          ? {
+              ...todo,
+              subtasks: todo.subtasks.filter((subtask) => subtask.id !== subtaskId),
+              updatedAt: new Date(),
+            }
+          : todo
+      )
+    );
+  };
+
+  const toggleSubtaskCompletion = (todoId: string, subtaskId: string) => {
+    setTodos((prevTodos) =>
+      prevTodos.map((todo) =>
+        todo.id === todoId
+          ? {
+              ...todo,
+              subtasks: todo.subtasks.map((subtask) =>
+                subtask.id === subtaskId
+                  ? { ...subtask, completed: !subtask.completed }
+                  : subtask
+              ),
+              updatedAt: new Date(),
+            }
+          : todo
+      )
+    );
+  };
+
   return (
     <TodoContext.Provider
       value={{
@@ -214,6 +290,10 @@ export const TodoProvider: React.FC<{ children: React.ReactNode }> = ({ children
         getTodosByCategory,
         filterTodos,
         reorderTodo,
+        addSubtask,
+        updateSubtask,
+        deleteSubtask,
+        toggleSubtaskCompletion,
       }}
     >
       {children}

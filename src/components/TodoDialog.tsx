@@ -14,6 +14,8 @@ import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { useTodo } from "@/contexts/TodoContext";
 import { Todo, Priority } from "@/types/todo";
+import { SubtaskManager } from "./SubtaskManager";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface TodoDialogProps {
   mode: "create" | "edit";
@@ -65,15 +67,15 @@ export function TodoDialog({ mode, todo, open, onOpenChange }: TodoDialogProps) 
   
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px] animate-fade-in rounded-xl">
-        <form onSubmit={handleSubmit}>
-          <DialogHeader>
-            <DialogTitle className="text-xl font-semibold">
-              {mode === "create" ? "Create Task" : "Edit Task"}
-            </DialogTitle>
-          </DialogHeader>
-          
-          <div className="grid gap-4 py-4">
+      <DialogContent className="sm:max-w-[500px] animate-fade-in rounded-xl max-h-[85vh] overflow-hidden flex flex-col">
+        <DialogHeader>
+          <DialogTitle className="text-xl font-semibold">
+            {mode === "create" ? "Create Task" : "Edit Task"}
+          </DialogTitle>
+        </DialogHeader>
+        
+        <ScrollArea className="flex-grow pr-4">
+          <form id="todo-form" onSubmit={handleSubmit} className="space-y-4 py-4">
             <div className="grid gap-2">
               <Label htmlFor="title">Task Name</Label>
               <Input
@@ -98,6 +100,17 @@ export function TodoDialog({ mode, todo, open, onOpenChange }: TodoDialogProps) 
                 rows={3}
               />
             </div>
+            
+            {mode === "edit" && todo && (
+              <div className="grid gap-2">
+                <Label>Subtasks</Label>
+                <SubtaskManager 
+                  todoId={todo.id} 
+                  subtasks={todo.subtasks} 
+                  isEditing={true} 
+                />
+              </div>
+            )}
             
             <div className="grid gap-2">
               <Label>Priority</Label>
@@ -190,17 +203,17 @@ export function TodoDialog({ mode, todo, open, onOpenChange }: TodoDialogProps) 
                 </div>
               </div>
             </div>
-          </div>
-          
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Cancel
-            </Button>
-            <Button type="submit" className="arc-gradient hover:opacity-90">
-              {mode === "create" ? "Create Task" : "Save Changes"}
-            </Button>
-          </DialogFooter>
-        </form>
+          </form>
+        </ScrollArea>
+        
+        <DialogFooter className="pt-4">
+          <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            Cancel
+          </Button>
+          <Button type="submit" form="todo-form" className="arc-gradient hover:opacity-90">
+            {mode === "create" ? "Create Task" : "Save Changes"}
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

@@ -7,6 +7,12 @@ export type Category = {
   color: string;
 };
 
+export type SubTask = {
+  id: string;
+  title: string;
+  completed: boolean;
+};
+
 export type Todo = {
   id: string;
   title: string;
@@ -17,6 +23,7 @@ export type Todo = {
   dueDate: Date | null;
   priority: Priority;
   categoryId: string;
+  subtasks: SubTask[];
 };
 
 export const DEFAULT_CATEGORIES: Category[] = [

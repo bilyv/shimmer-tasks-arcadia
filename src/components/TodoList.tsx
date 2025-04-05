@@ -7,8 +7,8 @@ import { CategorySelect } from "./CategorySelect";
 import { SearchAndFilters } from "./SearchAndFilters";
 import { StatsDisplay } from "./StatsDisplay";
 import { TodoDialog } from "./TodoDialog";
-import { ThemeToggle } from "./ThemeToggle";
 import { GreetingHeader } from "./GreetingHeader";
+import { Navbar } from "./Navbar";
 import { Button } from "@/components/ui/button";
 import { Plus, CheckSquare } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -80,115 +80,113 @@ export function TodoList() {
   const completedCount = todos.filter((todo) => todo.completed).length;
   
   return (
-    <div className="container mx-auto px-4 py-6 max-w-4xl">
-      <header className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-        <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-3xl font-bold mb-1 bg-gradient-to-r from-arc-purple to-arc-blue bg-clip-text text-transparent animate-fade-in">
-              Arce Todo
-            </h1>
-            <ThemeToggle />
+    <div className="min-h-screen pb-6">
+      <Navbar />
+      
+      <div className="container mx-auto px-4 py-6 max-w-4xl pt-24">
+        <header className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+          <div>
+            <GreetingHeader />
           </div>
-          <GreetingHeader />
+          
+          <div className="flex gap-2">
+            {completedCount > 0 && (
+              <Button
+                variant="outline"
+                onClick={handleClearCompleted}
+                className="gap-2"
+              >
+                <CheckSquare className="h-4 w-4" />
+                Clear Completed
+                <span className="ml-1 text-xs bg-muted rounded-full px-1.5 py-0.5">
+                  {completedCount}
+                </span>
+              </Button>
+            )}
+            
+            <Button onClick={handleAddTask} className="arc-gradient hover:opacity-90 gap-2">
+              <Plus className="h-4 w-4" />
+              {isMobile ? "Add" : "Add Task"}
+            </Button>
+          </div>
+        </header>
+        
+        <StatsDisplay />
+        
+        <div className="mt-8 mb-6">
+          <CategorySelect
+            selectedCategory={selectedCategory}
+            onCategoryChange={setSelectedCategory}
+          />
         </div>
         
-        <div className="flex gap-2">
-          {completedCount > 0 && (
-            <Button
-              variant="outline"
-              onClick={handleClearCompleted}
-              className="gap-2"
-            >
-              <CheckSquare className="h-4 w-4" />
-              Clear Completed
-              <span className="ml-1 text-xs bg-muted rounded-full px-1.5 py-0.5">
-                {completedCount}
-              </span>
-            </Button>
-          )}
-          
-          <Button onClick={handleAddTask} className="arc-gradient hover:opacity-90 gap-2">
-            <Plus className="h-4 w-4" />
-            {isMobile ? "Add" : "Add Task"}
-          </Button>
-        </div>
-      </header>
-      
-      <StatsDisplay />
-      
-      <div className="mt-8 mb-6">
-        <CategorySelect
-          selectedCategory={selectedCategory}
-          onCategoryChange={setSelectedCategory}
-        />
-      </div>
-      
-      <div className="mb-6">
-        <SearchAndFilters
-          searchQuery={searchQuery}
-          onSearchQueryChange={setSearchQuery}
-          showCompleted={showCompleted}
-          onShowCompletedChange={setShowCompleted}
-          sortOrder={sortOrder}
-          onSortOrderChange={setSortOrder}
-        />
-      </div>
-      
-      <div className="space-y-4">
-        {filteredTodos.length > 0 ? (
-          filteredTodos.map((todo) => (
-            <TodoItem
-              key={todo.id}
-              todo={todo}
-              categoryColor={getCategoryColor(todo.categoryId)}
-            />
-          ))
-        ) : (
-          <EmptyState
-            title="No tasks found"
-            description={
-              searchQuery
-                ? "Try adjusting your search or filters to find what you're looking for."
-                : "You don't have any tasks yet. Add your first task to get started!"
-            }
-            actionLabel={searchQuery ? undefined : "Add Your First Task"}
-            onAction={searchQuery ? undefined : handleAddTask}
+        <div className="mb-6">
+          <SearchAndFilters
+            searchQuery={searchQuery}
+            onSearchQueryChange={setSearchQuery}
+            showCompleted={showCompleted}
+            onShowCompletedChange={setShowCompleted}
+            sortOrder={sortOrder}
+            onSortOrderChange={setSortOrder}
           />
-        )}
+        </div>
+        
+        <div className="space-y-4">
+          {filteredTodos.length > 0 ? (
+            filteredTodos.map((todo) => (
+              <TodoItem
+                key={todo.id}
+                todo={todo}
+                categoryColor={getCategoryColor(todo.categoryId)}
+              />
+            ))
+          ) : (
+            <EmptyState
+              title="No tasks found"
+              description={
+                searchQuery
+                  ? "Try adjusting your search or filters to find what you're looking for."
+                  : "You don't have any tasks yet. Add your first task to get started!"
+              }
+              actionLabel={searchQuery ? undefined : "Add Your First Task"}
+              onAction={searchQuery ? undefined : handleAddTask}
+            />
+          )}
+        </div>
+        
+        <TodoDialog
+          mode="create"
+          open={showAddDialog}
+          onOpenChange={setShowAddDialog}
+        />
+        
+        <AlertDialog open={showClearDialog} onOpenChange={setShowClearDialog}>
+          <AlertDialogContent className="rounded-xl animate-fade-in">
+            <AlertDialogHeader>
+              <AlertDialogTitle>Clear completed tasks?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This will remove all completed tasks. This action cannot be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => {
+                  clearCompletedTodos();
+                  setShowClearDialog(false);
+                }}
+                className="bg-destructive hover:bg-destructive/90"
+              >
+                Clear
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+        
+        <footer className="mt-12 text-center text-xs text-muted-foreground pb-4">
+          Developed by nk_b.r.i.a.n
+        </footer>
       </div>
-      
-      <TodoDialog
-        mode="create"
-        open={showAddDialog}
-        onOpenChange={setShowAddDialog}
-      />
-      
-      <AlertDialog open={showClearDialog} onOpenChange={setShowClearDialog}>
-        <AlertDialogContent className="rounded-xl animate-fade-in">
-          <AlertDialogHeader>
-            <AlertDialogTitle>Clear completed tasks?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This will remove all completed tasks. This action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => {
-                clearCompletedTodos();
-                setShowClearDialog(false);
-              }}
-              className="bg-destructive hover:bg-destructive/90"
-            >
-              Clear
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-      
-      <footer className="mt-12 text-center text-xs text-muted-foreground pb-4">
-        Developed by nk_b.r.i.a.n
-      </footer>
     </div>
   );
 }
