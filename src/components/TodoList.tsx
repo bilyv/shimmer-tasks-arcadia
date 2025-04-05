@@ -7,6 +7,8 @@ import { CategorySelect } from "./CategorySelect";
 import { SearchAndFilters } from "./SearchAndFilters";
 import { StatsDisplay } from "./StatsDisplay";
 import { TodoDialog } from "./TodoDialog";
+import { ThemeToggle } from "./ThemeToggle";
+import { GreetingHeader } from "./GreetingHeader";
 import { Button } from "@/components/ui/button";
 import { Plus, CheckSquare } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -79,12 +81,15 @@ export function TodoList() {
   
   return (
     <div className="container mx-auto px-4 py-6 max-w-4xl">
-      <header className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+      <header className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
         <div>
-          <h1 className="text-3xl font-bold mb-1 bg-gradient-to-r from-arc-purple to-arc-blue bg-clip-text text-transparent animate-fade-in">
-            Shimmer Tasks
-          </h1>
-          <p className="text-muted-foreground">Organize your tasks beautifully</p>
+          <div className="flex items-center gap-2">
+            <h1 className="text-3xl font-bold mb-1 bg-gradient-to-r from-arc-purple to-arc-blue bg-clip-text text-transparent animate-fade-in">
+              Arce Todo
+            </h1>
+            <ThemeToggle />
+          </div>
+          <GreetingHeader />
         </div>
         
         <div className="flex gap-2">
