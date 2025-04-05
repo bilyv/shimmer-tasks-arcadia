@@ -5,7 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 interface TodoContextType {
   todos: Todo[];
   categories: Category[];
-  addTodo: (todo: Omit<Todo, "id" | "createdAt" | "updatedAt" | "subtasks">) => void;
+  addTodo: (todo: Omit<Todo, "id" | "createdAt" | "updatedAt" | "subtasks">) => string;
   updateTodo: (id: string, todo: Partial<Todo>) => void;
   deleteTodo: (id: string) => void;
   toggleTodoCompletion: (id: string) => void;
@@ -61,9 +61,10 @@ export const TodoProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [categories]);
 
   const addTodo = (todo: Omit<Todo, "id" | "createdAt" | "updatedAt" | "subtasks">) => {
+    const id = crypto.randomUUID();
     const newTodo: Todo = {
       ...todo,
-      id: crypto.randomUUID(),
+      id,
       createdAt: new Date(),
       updatedAt: new Date(),
       subtasks: [],
@@ -73,6 +74,7 @@ export const TodoProvider: React.FC<{ children: React.ReactNode }> = ({ children
       title: "Task added",
       description: `"${todo.title}" has been added to your tasks.`,
     });
+    return id;
   };
 
   const updateTodo = (id: string, todo: Partial<Todo>) => {

@@ -1,13 +1,28 @@
-
 import { ThemeToggle } from "./ThemeToggle";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { User } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { UserCircle, Users, LogOut } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export function Navbar() {
   const isMobile = useIsMobile();
   
+  // This would come from your auth context in a real app
+  const user = {
+    name: "John Doe",
+    email: "john@example.com",
+    avatarUrl: "https://github.com/shadcn.png",
+  };
+
   return (
     <nav className={cn(
       "fixed top-0 w-full z-50",
@@ -24,11 +39,38 @@ export function Navbar() {
         
         <div className="flex items-center gap-2">
           <ThemeToggle />
-          <Avatar className="h-8 w-8 bg-primary/10">
-            <AvatarFallback className="text-primary">
-              <User className="h-4 w-4" />
-            </AvatarFallback>
-          </Avatar>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="relative h-7 w-7 md:h-8 md:w-8 rounded-full p-0">
+                <Avatar className="h-7 w-7 md:h-8 md:w-8">
+                  <AvatarImage src={user.avatarUrl} alt={user.name} />
+                  <AvatarFallback>
+                    <UserCircle className="h-5 w-5 md:h-6 md:w-6" />
+                  </AvatarFallback>
+                </Avatar>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-[180px] md:w-[200px]" align="end" forceMount>
+              <DropdownMenuLabel className="font-normal py-2">
+                <div className="flex flex-col space-y-0.5">
+                  <p className="text-xs md:text-sm font-medium leading-none">{user.name}</p>
+                  <p className="text-[10px] md:text-xs leading-none text-muted-foreground">
+                    {user.email}
+                  </p>
+                </div>
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem className="text-xs md:text-sm py-1.5">
+                <Users className="mr-2 h-3.5 w-3.5" />
+                <span>Invite Friends</span>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem className="text-xs md:text-sm py-1.5 text-red-600">
+                <LogOut className="mr-2 h-3.5 w-3.5" />
+                <span>Log out</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
     </nav>

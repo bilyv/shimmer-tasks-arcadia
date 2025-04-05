@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -7,15 +6,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Calendar as CalendarIcon, X } from "lucide-react";
+import { Calendar as CalendarIcon, X, Plus } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { useTodo } from "@/contexts/TodoContext";
-import { Todo, Priority } from "@/types/todo";
-import { SubtaskManager } from "./SubtaskManager";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { Todo, Priority, SubTask } from "@/types/todo";
 
 interface TodoDialogProps {
   mode: "create" | "edit";
@@ -25,13 +22,40 @@ interface TodoDialogProps {
 }
 
 export function TodoDialog({ mode, todo, open, onOpenChange }: TodoDialogProps) {
-  const { addTodo, updateTodo, categories } = useTodo();
+  const { addTodo, updateTodo, categories, addSubtask } = useTodo();
   
   const [title, setTitle] = useState(todo?.title || "");
   const [description, setDescription] = useState(todo?.description || "");
   const [priority, setPriority] = useState<Priority>(todo?.priority || "medium");
   const [categoryId, setCategoryId] = useState(todo?.categoryId || categories[0]?.id || "");
   const [dueDate, setDueDate] = useState<Date | null>(todo?.dueDate || null);
+  const [subtasks, setSubtasks] = useState<SubTask[]>(todo?.subtasks || []);
+  const [newSubtaskTitle, setNewSubtaskTitle] = useState("");
+  
+  const handleAddSubtask = () => {
+    if (newSubtaskTitle.trim()) {
+      setSubtasks([
+        ...subtasks,
+        {
+          id: crypto.randomUUID(),
+          title: newSubtaskTitle.trim(),
+          completed: false,
+        },
+      ]);
+      setNewSubtaskTitle("");
+    }
+  };
+
+  const handleDeleteSubtask = (subtaskId: string) => {
+    setSubtasks(subtasks.filter((st) => st.id !== subtaskId));
+  };
+
+  const handleSubtaskKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleAddSubtask();
+    }
+  };
   
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,13 +63,20 @@ export function TodoDialog({ mode, todo, open, onOpenChange }: TodoDialogProps) 
     if (!title.trim()) return;
     
     if (mode === "create") {
-      addTodo({
+      const newTodo = {
         title,
         description,
         priority,
         categoryId,
         dueDate,
         completed: false,
+      };
+      
+      const newTodoId = addTodo(newTodo);
+      
+      // Add subtasks after todo creation
+      subtasks.forEach(subtask => {
+        addSubtask(newTodoId, subtask.title);
       });
     } else if (mode === "edit" && todo) {
       updateTodo(todo.id, {
@@ -54,6 +85,7 @@ export function TodoDialog({ mode, todo, open, onOpenChange }: TodoDialogProps) 
         priority,
         categoryId,
         dueDate,
+        subtasks,
       });
     }
     
@@ -67,150 +99,169 @@ export function TodoDialog({ mode, todo, open, onOpenChange }: TodoDialogProps) 
   
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px] animate-fade-in rounded-xl max-h-[85vh] overflow-hidden flex flex-col">
-        <DialogHeader>
-          <DialogTitle className="text-xl font-semibold">
+      <DialogContent className="w-[90%] max-w-[400px] animate-fade-in rounded-lg p-4">
+        <DialogHeader className="pb-2">
+          <DialogTitle className="text-lg font-semibold">
             {mode === "create" ? "Create Task" : "Edit Task"}
           </DialogTitle>
         </DialogHeader>
         
-        <ScrollArea className="flex-grow pr-4">
-          <form id="todo-form" onSubmit={handleSubmit} className="space-y-4 py-4">
-            <div className="grid gap-2">
-              <Label htmlFor="title">Task Name</Label>
-              <Input
-                id="title"
-                placeholder="What needs to be done?"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                className="rounded-lg"
-                required
-                autoFocus
-              />
-            </div>
-            
-            <div className="grid gap-2">
-              <Label htmlFor="description">Description (optional)</Label>
-              <Textarea
-                id="description"
-                placeholder="Add some details..."
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                className="resize-none rounded-lg"
-                rows={3}
-              />
-            </div>
-            
-            {mode === "edit" && todo && (
-              <div className="grid gap-2">
-                <Label>Subtasks</Label>
-                <SubtaskManager 
-                  todoId={todo.id} 
-                  subtasks={todo.subtasks} 
-                  isEditing={true} 
-                />
-              </div>
-            )}
-            
-            <div className="grid gap-2">
-              <Label>Priority</Label>
-              <RadioGroup
-                value={priority}
-                onValueChange={(value) => setPriority(value as Priority)}
-                className="flex space-x-2"
-              >
-                <div className="flex items-center space-x-1">
-                  <RadioGroupItem value="low" id="low" className="text-arc-green" />
-                  <Label htmlFor="low" className="cursor-pointer">Low</Label>
-                </div>
-                <div className="flex items-center space-x-1">
-                  <RadioGroupItem value="medium" id="medium" className="text-arc-yellow" />
-                  <Label htmlFor="medium" className="cursor-pointer">Medium</Label>
-                </div>
-                <div className="flex items-center space-x-1">
-                  <RadioGroupItem value="high" id="high" className="text-arc-red" />
-                  <Label htmlFor="high" className="cursor-pointer">High</Label>
-                </div>
-              </RadioGroup>
-            </div>
-            
-            <div className="grid grid-cols-2 gap-4">
-              <div className="grid gap-2">
-                <Label>Category</Label>
-                <Select value={categoryId} onValueChange={setCategoryId}>
-                  <SelectTrigger className="w-full rounded-lg">
-                    <SelectValue placeholder="Select a category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {categories.map((category) => (
-                      <SelectItem key={category.id} value={category.id}>
-                        <div className="flex items-center">
-                          <div 
-                            className="w-3 h-3 rounded-full mr-2" 
-                            style={{ backgroundColor: category.color }}
-                          />
-                          {category.name}
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div className="grid gap-2">
-                <Label>Due Date (optional)</Label>
-                <div className="flex">
-                  <Popover>
-                    <PopoverTrigger asChild>
+        <form id="todo-form" onSubmit={handleSubmit} className="space-y-3">
+          <div className="grid gap-1.5">
+            <Label htmlFor="title" className="text-sm">Task Name</Label>
+            <Input
+              id="title"
+              placeholder="What needs to be done?"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className="rounded-md h-8 text-sm"
+              required
+              autoFocus
+            />
+          </div>
+          
+          <div className="grid gap-1.5">
+            <Label htmlFor="description" className="text-sm">Description (optional)</Label>
+            <Textarea
+              id="description"
+              placeholder="Add some details..."
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              className="resize-none rounded-md text-sm min-h-[60px]"
+              rows={2}
+            />
+          </div>
+
+          <div className="grid gap-1.5">
+            <Label className="text-sm">Subtasks</Label>
+            <div className="space-y-2">
+              {subtasks.length > 0 && (
+                <div className="space-y-1.5">
+                  {subtasks.map((subtask) => (
+                    <div key={subtask.id} className="flex items-center gap-2 group">
+                      <span className="flex-1 text-xs">{subtask.title}</span>
                       <Button
                         type="button"
-                        variant="outline"
-                        className={cn(
-                          "justify-start text-left font-normal flex-1 rounded-lg",
-                          !dueDate && "text-muted-foreground"
-                        )}
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                        onClick={() => handleDeleteSubtask(subtask.id)}
                       >
-                        <CalendarIcon className="mr-2 h-4 w-4" />
-                        {dueDate ? format(dueDate, "MMM d, yyyy") : "Select date"}
+                        <X className="h-3 w-3" />
                       </Button>
-                    </PopoverTrigger>
-                    <PopoverContent 
-                      className="w-auto p-0 rounded-lg" 
-                      align="start"
-                      onClick={preventSubmit}
-                    >
-                      <Calendar
-                        mode="single"
-                        selected={dueDate || undefined}
-                        onSelect={setDueDate}
-                        initialFocus
-                        className="p-3 pointer-events-auto"
-                      />
-                    </PopoverContent>
-                  </Popover>
-                  
-                  {dueDate && (
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => setDueDate(null)}
-                      className="ml-1"
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  )}
+                    </div>
+                  ))}
                 </div>
+              )}
+              
+              <div className="flex items-center gap-1.5">
+                <Input
+                  placeholder="Add a subtask..."
+                  value={newSubtaskTitle}
+                  onChange={(e) => setNewSubtaskTitle(e.target.value)}
+                  onKeyDown={handleSubtaskKeyDown}
+                  className="h-7 text-xs"
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7 shrink-0"
+                  onClick={handleAddSubtask}
+                >
+                  <Plus className="h-3 w-3" />
+                </Button>
               </div>
             </div>
-          </form>
-        </ScrollArea>
+          </div>
+          
+          <div className="grid gap-1.5">
+            <Label className="text-sm">Priority</Label>
+            <RadioGroup
+              value={priority}
+              onValueChange={(value: Priority) => setPriority(value)}
+              className="flex gap-3"
+            >
+              <div className="flex items-center gap-1.5">
+                <RadioGroupItem value="low" id="low" className="h-3.5 w-3.5" />
+                <Label htmlFor="low" className="text-xs">Low</Label>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <RadioGroupItem value="medium" id="medium" className="h-3.5 w-3.5" />
+                <Label htmlFor="medium" className="text-xs">Medium</Label>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <RadioGroupItem value="high" id="high" className="h-3.5 w-3.5" />
+                <Label htmlFor="high" className="text-xs">High</Label>
+              </div>
+            </RadioGroup>
+          </div>
+          
+          <div className="grid gap-1.5">
+            <Label className="text-sm">Category</Label>
+            <Select value={categoryId} onValueChange={setCategoryId}>
+              <SelectTrigger className="rounded-md h-8 text-xs">
+                <SelectValue placeholder="Select a category" />
+              </SelectTrigger>
+              <SelectContent>
+                {categories.map((category) => (
+                  <SelectItem key={category.id} value={category.id} className="text-xs">
+                    <div className="flex items-center gap-1.5">
+                      <div
+                        className="w-1.5 h-1.5 rounded-full"
+                        style={{ backgroundColor: category.color }}
+                      />
+                      {category.name}
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          
+          <div className="grid gap-1.5">
+            <Label className="text-sm">Due Date (optional)</Label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn(
+                    "justify-start text-left font-normal rounded-md h-8 text-xs",
+                    !dueDate && "text-muted-foreground"
+                  )}
+                  onClick={preventSubmit}
+                >
+                  <CalendarIcon className="mr-2 h-3 w-3" />
+                  {dueDate ? format(dueDate, "MMM d, yyyy") : "Pick a date"}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={dueDate || undefined}
+                  onSelect={setDueDate}
+                  initialFocus
+                  className="rounded-md"
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
+        </form>
         
-        <DialogFooter className="pt-4">
-          <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+        <DialogFooter className="pt-3 space-x-2">
+          <Button 
+            type="button" 
+            variant="outline" 
+            onClick={() => onOpenChange(false)}
+            className="h-8 text-xs rounded-md"
+          >
             Cancel
           </Button>
-          <Button type="submit" form="todo-form" className="arc-gradient hover:opacity-90">
+          <Button 
+            type="submit" 
+            form="todo-form" 
+            className="arc-gradient hover:opacity-90 h-8 text-xs rounded-md"
+          >
             {mode === "create" ? "Create Task" : "Save Changes"}
           </Button>
         </DialogFooter>
