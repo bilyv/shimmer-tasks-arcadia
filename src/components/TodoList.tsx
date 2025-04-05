@@ -185,6 +185,10 @@ export function TodoList() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      
+      <footer className="mt-12 text-center text-xs text-muted-foreground pb-4">
+        Developed by nk_b.r.i.a.n
+      </footer>
     </div>
   );
 }

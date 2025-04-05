@@ -20,9 +20,8 @@ export function GreetingHeader() {
   
   return (
     <p className={cn(
-      "text-muted-foreground text-lg animate-fade-in",
-      "opacity-0 transform translate a-y-2",
-      "animate-[fade-in_0.6s_0.3s_forwards]"
+      "text-muted-foreground text-lg",
+      "animate-fade-in opacity-100"
     )}>
       {greeting}, {name}
     </p>

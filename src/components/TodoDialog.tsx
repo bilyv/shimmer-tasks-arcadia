@@ -58,6 +58,11 @@ export function TodoDialog({ mode, todo, open, onOpenChange }: TodoDialogProps) 
     onOpenChange(false);
   };
   
+  // This prevents form submission when clicking inside the date picker
+  const preventSubmit = (e: React.MouseEvent) => {
+    e.stopPropagation();
+  };
+  
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px] animate-fade-in rounded-xl">
@@ -145,6 +150,7 @@ export function TodoDialog({ mode, todo, open, onOpenChange }: TodoDialogProps) 
                   <Popover>
                     <PopoverTrigger asChild>
                       <Button
+                        type="button"
                         variant="outline"
                         className={cn(
                           "justify-start text-left font-normal flex-1 rounded-lg",
@@ -155,12 +161,17 @@ export function TodoDialog({ mode, todo, open, onOpenChange }: TodoDialogProps) 
                         {dueDate ? format(dueDate, "MMM d, yyyy") : "Select date"}
                       </Button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0 rounded-lg" align="start">
+                    <PopoverContent 
+                      className="w-auto p-0 rounded-lg" 
+                      align="start"
+                      onClick={preventSubmit}
+                    >
                       <Calendar
                         mode="single"
                         selected={dueDate || undefined}
                         onSelect={setDueDate}
                         initialFocus
+                        className="p-3 pointer-events-auto"
                       />
                     </PopoverContent>
                   </Popover>
