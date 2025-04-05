@@ -2,6 +2,8 @@
 import { ThemeToggle } from "./ThemeToggle";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { User } from "lucide-react";
 
 export function Navbar() {
   const isMobile = useIsMobile();
@@ -22,6 +24,11 @@ export function Navbar() {
         
         <div className="flex items-center gap-2">
           <ThemeToggle />
+          <Avatar className="h-8 w-8 bg-primary/10">
+            <AvatarFallback className="text-primary">
+              <User className="h-4 w-4" />
+            </AvatarFallback>
+          </Avatar>
         </div>
       </div>
     </nav>
