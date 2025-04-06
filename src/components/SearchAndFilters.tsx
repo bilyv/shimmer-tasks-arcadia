@@ -1,7 +1,7 @@
 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, Filter } from "lucide-react";
+import { Search, Filter, Calendar } from "lucide-react";
 import { 
   DropdownMenu,
   DropdownMenuTrigger,
@@ -15,8 +15,10 @@ interface SearchAndFiltersProps {
   onSearchQueryChange: (query: string) => void;
   showCompleted: boolean;
   onShowCompletedChange: (show: boolean) => void;
-  sortOrder: "newest" | "oldest" | "dueDate" | "priority";
-  onSortOrderChange: (order: "newest" | "oldest" | "dueDate" | "priority") => void;
+  sortOrder: "newest" | "oldest" | "priority";
+  onSortOrderChange: (order: "newest" | "oldest" | "priority") => void;
+  onCalendarToggle: () => void;
+  isCalendarVisible: boolean;
 }
 
 export function SearchAndFilters({
@@ -25,7 +27,9 @@ export function SearchAndFilters({
   showCompleted,
   onShowCompletedChange,
   sortOrder,
-  onSortOrderChange
+  onSortOrderChange,
+  onCalendarToggle,
+  isCalendarVisible
 }: SearchAndFiltersProps) {
   const [isFocused, setIsFocused] = useState(false);
   
@@ -42,6 +46,15 @@ export function SearchAndFilters({
           onBlur={() => setIsFocused(false)}
         />
       </div>
+      
+      <Button 
+        variant={isCalendarVisible ? "default" : "outline"} 
+        size="icon" 
+        className="rounded-lg"
+        onClick={onCalendarToggle}
+      >
+        <Calendar className="h-4 w-4" />
+      </Button>
       
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
@@ -71,13 +84,6 @@ export function SearchAndFilters({
             onCheckedChange={(checked) => checked && onSortOrderChange("oldest")}
           >
             Oldest first
-          </DropdownMenuCheckboxItem>
-          
-          <DropdownMenuCheckboxItem
-            checked={sortOrder === "dueDate"}
-            onCheckedChange={(checked) => checked && onSortOrderChange("dueDate")}
-          >
-            Due date
           </DropdownMenuCheckboxItem>
           
           <DropdownMenuCheckboxItem

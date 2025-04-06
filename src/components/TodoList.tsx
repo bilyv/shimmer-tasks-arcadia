@@ -10,9 +10,11 @@ import { TodoDialog } from "./TodoDialog";
 import { GreetingHeader } from "./GreetingHeader";
 import { Navbar } from "./Navbar";
 import { Button } from "@/components/ui/button";
-import { Plus, CheckSquare } from "lucide-react";
+import { Plus, CheckSquare, Calendar } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Todo } from "@/types/todo";
+import { TaskCalendarView } from "./TaskCalendarView";
+import { format } from "date-fns";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -31,14 +33,16 @@ export function TodoList() {
   const [showCompleted, setShowCompleted] = useState(true);
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [showClearDialog, setShowClearDialog] = useState(false);
-  const [sortOrder, setSortOrder] = useState<"newest" | "oldest" | "dueDate" | "priority">("newest");
+  const [sortOrder, setSortOrder] = useState<"newest" | "oldest" | "priority">("newest");
+  const [showCalendar, setShowCalendar] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const isMobile = useIsMobile();
   
   const [filteredTodos, setFilteredTodos] = useState<Todo[]>([]);
   
   useEffect(() => {
     // First, filter the todos
-    let filtered = filterTodos(searchQuery, selectedCategory || undefined, showCompleted ? undefined : false);
+    let filtered = filterTodos(searchQuery, selectedCategory || undefined, showCompleted ? undefined : false, selectedDate);
     
     // Then, sort them
     filtered = [...filtered].sort((a, b) => {
@@ -47,11 +51,6 @@ export function TodoList() {
           return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
         case "oldest":
           return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
-        case "dueDate":
-          if (!a.dueDate && !b.dueDate) return 0;
-          if (!a.dueDate) return 1;
-          if (!b.dueDate) return -1;
-          return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
         case "priority": {
           const priorityOrder = { high: 0, medium: 1, low: 2 };
           return priorityOrder[a.priority] - priorityOrder[b.priority];
@@ -62,7 +61,7 @@ export function TodoList() {
     });
     
     setFilteredTodos(filtered);
-  }, [todos, selectedCategory, searchQuery, showCompleted, sortOrder, filterTodos]);
+  }, [todos, selectedCategory, searchQuery, showCompleted, sortOrder, filterTodos, selectedDate]);
   
   const getCategoryColor = (categoryId: string) => {
     const category = categories.find((cat) => cat.id === categoryId);
@@ -77,6 +76,14 @@ export function TodoList() {
     setShowClearDialog(true);
   };
   
+  const handleCalendarToggle = () => {
+    setShowCalendar(!showCalendar);
+  };
+  
+  const handleDateSelect = (date: Date | undefined) => {
+    setSelectedDate(date);
+  };
+  
   const completedCount = todos.filter((todo) => todo.completed).length;
   
   return (
@@ -87,6 +94,11 @@ export function TodoList() {
         <header className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
           <div>
             <GreetingHeader />
+            {selectedDate && (
+              <div className="text-sm text-muted-foreground mt-1">
+                Showing tasks for {format(selectedDate, "MMMM d, yyyy")}
+              </div>
+            )}
           </div>
           
           <div className="flex gap-2">
@@ -128,8 +140,17 @@ export function TodoList() {
             onShowCompletedChange={setShowCompleted}
             sortOrder={sortOrder}
             onSortOrderChange={setSortOrder}
+            onCalendarToggle={handleCalendarToggle}
+            isCalendarVisible={showCalendar}
           />
         </div>
+        
+        {showCalendar && (
+          <TaskCalendarView 
+            onSelectDate={handleDateSelect}
+            selectedDate={selectedDate}
+          />
+        )}
         
         <div className="space-y-4">
           {filteredTodos.length > 0 ? (
@@ -142,14 +163,16 @@ export function TodoList() {
             ))
           ) : (
             <EmptyState
-              title="No tasks found"
+              title={selectedDate ? "No tasks for this date" : "No tasks found"}
               description={
-                searchQuery
-                  ? "Try adjusting your search or filters to find what you're looking for."
-                  : "You don't have any tasks yet. Add your first task to get started!"
+                selectedDate 
+                  ? `There are no tasks scheduled for ${format(selectedDate, "MMMM d, yyyy")}.`
+                  : searchQuery
+                    ? "Try adjusting your search or filters to find what you're looking for."
+                    : "You don't have any tasks yet. Add your first task to get started!"
               }
-              actionLabel={searchQuery ? undefined : "Add Your First Task"}
-              onAction={searchQuery ? undefined : handleAddTask}
+              actionLabel={searchQuery || selectedDate ? undefined : "Add Your First Task"}
+              onAction={searchQuery || selectedDate ? undefined : handleAddTask}
             />
           )}
         </div>
