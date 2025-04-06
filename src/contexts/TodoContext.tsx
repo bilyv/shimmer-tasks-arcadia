@@ -8,7 +8,7 @@ import { format } from "date-fns";
 interface TodoContextType {
   todos: Todo[];
   categories: Category[];
-  addTodo: (todo: Omit<Todo, "id" | "completed" | "createdAt" | "subtasks">) => string;
+  addTodo: (todo: Omit<Todo, "id" | "completed" | "createdAt" | "subtasks" | "updatedAt">) => string;
   updateTodo: (id: string, updates: Partial<Todo>) => void;
   deleteTodo: (id: string) => void;
   toggleTodoCompletion: (id: string) => void;
@@ -35,7 +35,21 @@ export const TodoProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const { toast } = useToast();
   const [todos, setTodos] = useState<Todo[]>(() => {
     const savedTodos = localStorage.getItem("todos");
-    return savedTodos ? JSON.parse(savedTodos) : [];
+    if (!savedTodos) return [];
+    
+    // Parse todos and convert date strings to Date objects
+    try {
+      const parsedTodos = JSON.parse(savedTodos);
+      return parsedTodos.map((todo: any) => ({
+        ...todo,
+        createdAt: new Date(todo.createdAt),
+        updatedAt: new Date(todo.updatedAt),
+        dueDate: todo.dueDate ? new Date(todo.dueDate) : null
+      }));
+    } catch (e) {
+      console.error("Error parsing todos from localStorage:", e);
+      return [];
+    }
   });
 
   const [categories, setCategories] = useState<Category[]>(() => {
@@ -54,12 +68,14 @@ export const TodoProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [categories]);
 
   // Add a new todo
-  const addTodo = (todo: Omit<Todo, "id" | "completed" | "createdAt" | "subtasks">) => {
+  const addTodo = (todo: Omit<Todo, "id" | "completed" | "createdAt" | "subtasks" | "updatedAt">) => {
+    const now = new Date();
     const newTodo: Todo = {
       ...todo,
       id: crypto.randomUUID(),
       completed: false,
-      createdAt: new Date().toISOString(),
+      createdAt: now,
+      updatedAt: now,
       subtasks: [],
     };
 
@@ -77,7 +93,7 @@ export const TodoProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const updateTodo = (id: string, updates: Partial<Todo>) => {
     setTodos((prevTodos) => 
       prevTodos.map((todo) => 
-        todo.id === id ? { ...todo, ...updates } : todo
+        todo.id === id ? { ...todo, ...updates, updatedAt: new Date() } : todo
       )
     );
     
@@ -101,7 +117,7 @@ export const TodoProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const toggleTodoCompletion = (id: string) => {
     setTodos((prevTodos) => 
       prevTodos.map((todo) => 
-        todo.id === id ? { ...todo, completed: !todo.completed } : todo
+        todo.id === id ? { ...todo, completed: !todo.completed, updatedAt: new Date() } : todo
       )
     );
   };
@@ -127,7 +143,7 @@ export const TodoProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setTodos((prevTodos) => 
       prevTodos.map((todo) => 
         todo.id === todoId 
-          ? { ...todo, subtasks: [...todo.subtasks, newSubtask] } 
+          ? { ...todo, subtasks: [...todo.subtasks, newSubtask], updatedAt: new Date() } 
           : todo
       )
     );
@@ -140,7 +156,8 @@ export const TodoProvider: React.FC<{ children: React.ReactNode }> = ({ children
         todo.id === todoId 
           ? { 
               ...todo, 
-              subtasks: todo.subtasks.filter((st) => st.id !== subtaskId) 
+              subtasks: todo.subtasks.filter((st) => st.id !== subtaskId),
+              updatedAt: new Date() 
             } 
           : todo
       )
@@ -165,7 +182,8 @@ export const TodoProvider: React.FC<{ children: React.ReactNode }> = ({ children
           return { 
             ...todo, 
             subtasks: updatedSubtasks,
-            completed: allSubtasksCompleted ? true : todo.completed
+            completed: allSubtasksCompleted ? true : todo.completed,
+            updatedAt: new Date()
           };
         }
         return todo;
@@ -194,7 +212,7 @@ export const TodoProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       // Filter by date
       const matchesDate = !date || (todo.dueDate && 
-        format(new Date(todo.dueDate), 'yyyy-MM-dd') === format(date, 'yyyy-MM-dd'));
+        format(todo.dueDate, 'yyyy-MM-dd') === format(date, 'yyyy-MM-dd'));
 
       return matchesSearch && matchesCategory && matchesCompletion && 
         (date ? matchesDate : true);
@@ -216,7 +234,7 @@ export const TodoProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const getTodoCountForDate = (date: Date): number => {
     return todos.filter((todo) => {
       if (!todo.dueDate) return false;
-      return format(new Date(todo.dueDate), 'yyyy-MM-dd') === format(date, 'yyyy-MM-dd');
+      return format(todo.dueDate, 'yyyy-MM-dd') === format(date, 'yyyy-MM-dd');
     }).length;
   };
 

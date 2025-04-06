@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -73,7 +72,6 @@ export function TodoDialog({ mode, todo, open, onOpenChange }: TodoDialogProps) 
         priority,
         categoryId,
         dueDate,
-        completed: false,
       };
       
       const newTodoId = addTodo(newTodo);
