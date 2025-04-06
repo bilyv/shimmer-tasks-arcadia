@@ -1,8 +1,9 @@
+
 import { ThemeToggle } from "./ThemeToggle";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { UserCircle, Users, LogOut } from "lucide-react";
+import { UserCircle, Users, LogOut, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -12,9 +13,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useState } from "react";
+import { FeedbackDialog } from "./FeedbackDialog";
 
 export function Navbar() {
   const isMobile = useIsMobile();
+  const [showFeedbackDialog, setShowFeedbackDialog] = useState(false);
   
   // This would come from your auth context in a real app
   const user = {
@@ -38,6 +42,15 @@ export function Navbar() {
         </div>
         
         <div className="flex items-center gap-2">
+          <Button 
+            variant="ghost" 
+            size="icon"
+            className="relative h-9 w-9 rounded-full"
+            onClick={() => setShowFeedbackDialog(true)}
+          >
+            <MessageSquare className="h-5 w-5" />
+            <span className="sr-only">Feedback</span>
+          </Button>
           <ThemeToggle />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -73,6 +86,11 @@ export function Navbar() {
           </DropdownMenu>
         </div>
       </div>
+      
+      <FeedbackDialog 
+        open={showFeedbackDialog} 
+        onOpenChange={setShowFeedbackDialog} 
+      />
     </nav>
   );
 }

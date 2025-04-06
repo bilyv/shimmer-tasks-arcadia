@@ -116,9 +116,24 @@ export const TodoProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Toggle todo completion
   const toggleTodoCompletion = (id: string) => {
     setTodos((prevTodos) => 
-      prevTodos.map((todo) => 
-        todo.id === id ? { ...todo, completed: !todo.completed, updatedAt: new Date() } : todo
-      )
+      prevTodos.map((todo) => {
+        if (todo.id === id) {
+          // When toggling the main task, also toggle all subtasks to match
+          const newCompletedState = !todo.completed;
+          const updatedSubtasks = todo.subtasks.map(subtask => ({
+            ...subtask,
+            completed: newCompletedState
+          }));
+          
+          return {
+            ...todo,
+            completed: newCompletedState,
+            subtasks: updatedSubtasks,
+            updatedAt: new Date()
+          };
+        }
+        return todo;
+      })
     );
   };
 
@@ -164,7 +179,7 @@ export const TodoProvider: React.FC<{ children: React.ReactNode }> = ({ children
     );
   };
 
-  // Toggle subtask completion and auto-complete parent if all subtasks are done
+  // Toggle subtask completion and update parent todo completion status
   const toggleSubtaskCompletion = (todoId: string, subtaskId: string) => {
     setTodos((prevTodos) => 
       prevTodos.map((todo) => {
@@ -174,15 +189,24 @@ export const TodoProvider: React.FC<{ children: React.ReactNode }> = ({ children
             st.id === subtaskId ? { ...st, completed: !st.completed } : st
           );
           
-          // Check if all subtasks are now completed
-          const allSubtasksCompleted = updatedSubtasks.length > 0 && 
-            updatedSubtasks.every(st => st.completed);
+          // Get the subtask that was toggled
+          const toggledSubtask = updatedSubtasks.find(st => st.id === subtaskId);
           
-          // If all subtasks are completed, also complete the parent task
+          let todoCompleted = todo.completed;
+          
+          // If a subtask is being unchecked, the parent todo should also be unchecked
+          if (toggledSubtask && !toggledSubtask.completed) {
+            todoCompleted = false;
+          } 
+          // If all subtasks are now completed, the parent should be completed
+          else if (updatedSubtasks.length > 0 && updatedSubtasks.every(st => st.completed)) {
+            todoCompleted = true;
+          }
+          
           return { 
             ...todo, 
             subtasks: updatedSubtasks,
-            completed: allSubtasksCompleted ? true : todo.completed,
+            completed: todoCompleted,
             updatedAt: new Date()
           };
         }

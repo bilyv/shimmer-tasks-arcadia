@@ -27,6 +27,7 @@ export function TodoItem({ todo, categoryColor }: TodoItemProps) {
   const { toggleTodoCompletion, deleteTodo } = useTodo();
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
 
   const handleToggle = () => {
     toggleTodoCompletion(todo.id);
@@ -60,10 +61,14 @@ export function TodoItem({ todo, categoryColor }: TodoItemProps) {
     <>
       <div
         className={cn(
-          "task-card group",
+          "task-card group relative",
           todo.completed ? "opacity-60" : "",
-          "animate-fade-in"
+          "animate-fade-in transition-all duration-300",
+          isHovered ? "scale-[1.02] shadow-md" : "scale-100",
+          "hover:bg-accent/20"
         )}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
       >
         <div
           className="category-indicator"
