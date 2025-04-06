@@ -1,7 +1,6 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense, lazy } from "react";
 import { useTodo } from "@/contexts/TodoContext";
-import { TodoItem } from "./TodoItem";
 import { EmptyState } from "./EmptyState";
 import { CategorySelect } from "./CategorySelect";
 import { SearchAndFilters } from "./SearchAndFilters";
@@ -10,7 +9,7 @@ import { TodoDialog } from "./TodoDialog";
 import { GreetingHeader } from "./GreetingHeader";
 import { Navbar } from "./Navbar";
 import { Button } from "@/components/ui/button";
-import { Plus, CheckSquare, Calendar } from "lucide-react";
+import { Plus, CheckSquare } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Todo } from "@/types/todo";
 import { TaskCalendarView } from "./TaskCalendarView";
@@ -25,6 +24,25 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Skeleton } from "@/components/ui/skeleton";
+
+// Lazy load the TodoItem component
+const TodoItem = lazy(() => import("./TodoItem").then(module => ({ default: module.TodoItem })));
+
+// Create a loading placeholder for TodoItem
+const TodoItemSkeleton = () => (
+  <div className="task-card animate-pulse">
+    <div className="category-indicator bg-muted"></div>
+    <div className="flex items-start gap-3">
+      <div className="rounded-full h-4 w-4 mt-1 bg-muted"></div>
+      <div className="flex-1">
+        <div className="h-6 w-3/4 bg-muted rounded mb-2"></div>
+        <div className="h-4 w-1/2 bg-muted rounded mb-2"></div>
+        <div className="h-3 w-1/4 bg-muted rounded"></div>
+      </div>
+    </div>
+  </div>
+);
 
 export function TodoList() {
   const { todos, categories, filterTodos, clearCompletedTodos } = useTodo();
@@ -155,11 +173,12 @@ export function TodoList() {
         <div className="space-y-4">
           {filteredTodos.length > 0 ? (
             filteredTodos.map((todo) => (
-              <TodoItem
-                key={todo.id}
-                todo={todo}
-                categoryColor={getCategoryColor(todo.categoryId)}
-              />
+              <Suspense key={todo.id} fallback={<TodoItemSkeleton />}>
+                <TodoItem
+                  todo={todo}
+                  categoryColor={getCategoryColor(todo.categoryId)}
+                />
+              </Suspense>
             ))
           ) : (
             <EmptyState

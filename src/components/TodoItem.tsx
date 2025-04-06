@@ -27,6 +27,7 @@ export function TodoItem({ todo, categoryColor }: TodoItemProps) {
   const { toggleTodoCompletion, deleteTodo } = useTodo();
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   const handleToggle = () => {
     toggleTodoCompletion(todo.id);
@@ -34,6 +35,20 @@ export function TodoItem({ todo, categoryColor }: TodoItemProps) {
 
   const handleDelete = () => {
     deleteTodo(todo.id);
+  };
+
+  const handleCollapsibleChange = (open: boolean) => {
+    setIsOpen(open);
+    
+    // Add animation class when expanding
+    if (open) {
+      setIsExpanded(true);
+    } else {
+      // Remove class after animation completes
+      setTimeout(() => {
+        setIsExpanded(false);
+      }, 300);
+    }
   };
 
   const getPriorityColor = (priority: Priority) => {
@@ -62,8 +77,10 @@ export function TodoItem({ todo, categoryColor }: TodoItemProps) {
         className={cn(
           "task-card group",
           todo.completed ? "opacity-60" : "",
-          "animate-fade-in"
+          "animate-fade-in cursor-pointer transition-all duration-300 hover:translate-y-[-2px] hover:shadow-md",
+          isExpanded ? "scale-[1.02] bg-accent/20" : ""
         )}
+        onClick={() => hasSubtasks && handleCollapsibleChange(!isOpen)}
       >
         <div
           className="category-indicator"
@@ -71,7 +88,7 @@ export function TodoItem({ todo, categoryColor }: TodoItemProps) {
         />
         
         <div className="flex items-start gap-3">
-          <div className="pt-0.5">
+          <div className="pt-0.5" onClick={(e) => e.stopPropagation()}>
             <Checkbox
               checked={todo.completed}
               onCheckedChange={handleToggle}
@@ -109,6 +126,7 @@ export function TodoItem({ todo, categoryColor }: TodoItemProps) {
                       variant="ghost"
                       size="icon"
                       className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
+                      onClick={(e) => e.stopPropagation()}
                     >
                       <span className="sr-only">Open menu</span>
                       <svg
@@ -127,12 +145,18 @@ export function TodoItem({ todo, categoryColor }: TodoItemProps) {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-36">
-                    <DropdownMenuItem onClick={() => setShowEditDialog(true)}>
+                    <DropdownMenuItem onClick={(e) => {
+                      e.stopPropagation();
+                      setShowEditDialog(true);
+                    }}>
                       <Edit className="mr-2 h-4 w-4" />
                       Edit
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={handleDelete} className="text-destructive">
+                    <DropdownMenuItem onClick={(e) => {
+                      e.stopPropagation();
+                      handleDelete();
+                    }} className="text-destructive">
                       <Trash2 className="mr-2 h-4 w-4" />
                       Delete
                     </DropdownMenuItem>
@@ -153,18 +177,18 @@ export function TodoItem({ todo, categoryColor }: TodoItemProps) {
             )}
             
             {hasSubtasks && (
-              <Collapsible open={isOpen} onOpenChange={setIsOpen} className="my-2">
+              <Collapsible open={isOpen} onOpenChange={handleCollapsibleChange} className="my-2">
                 <div className="flex items-center justify-between">
                   <div className="text-xs text-muted-foreground">
                     Subtasks: {completedSubtasks}/{todo.subtasks.length}
                   </div>
-                  <CollapsibleTrigger asChild>
+                  <CollapsibleTrigger asChild onClick={(e) => e.stopPropagation()}>
                     <Button variant="ghost" size="sm" className="p-0 h-5 w-5">
                       {isOpen ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
                     </Button>
                   </CollapsibleTrigger>
                 </div>
-                <CollapsibleContent className="mt-2">
+                <CollapsibleContent className="mt-2 animate-fade-in">
                   <SubtaskManager todoId={todo.id} subtasks={todo.subtasks} />
                 </CollapsibleContent>
               </Collapsible>
@@ -202,3 +226,6 @@ export function TodoItem({ todo, categoryColor }: TodoItemProps) {
     </>
   );
 }
+
+// Export the component for lazy loading
+export default { TodoItem };

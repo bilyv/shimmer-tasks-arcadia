@@ -1,8 +1,10 @@
+
+import { useState } from "react";
 import { ThemeToggle } from "./ThemeToggle";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { UserCircle, Users, LogOut } from "lucide-react";
+import { UserCircle, Users, LogOut, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -12,9 +14,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { FeedbackForm } from "./FeedbackForm";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 export function Navbar() {
   const isMobile = useIsMobile();
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
   
   // This would come from your auth context in a real app
   const user = {
@@ -38,6 +43,24 @@ export function Navbar() {
         </div>
         
         <div className="flex items-center gap-2">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  onClick={() => setFeedbackOpen(true)}
+                  className="text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <MessageSquare className="h-5 w-5" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Share your feedback</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+          
           <ThemeToggle />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -73,6 +96,8 @@ export function Navbar() {
           </DropdownMenu>
         </div>
       </div>
+      
+      <FeedbackForm open={feedbackOpen} onOpenChange={setFeedbackOpen} />
     </nav>
   );
 }

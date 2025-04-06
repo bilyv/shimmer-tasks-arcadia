@@ -113,12 +113,34 @@ export const TodoProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
   };
 
-  // Toggle todo completion
+  // Toggle todo completion and update all subtasks accordingly
   const toggleTodoCompletion = (id: string) => {
     setTodos((prevTodos) => 
-      prevTodos.map((todo) => 
-        todo.id === id ? { ...todo, completed: !todo.completed, updatedAt: new Date() } : todo
-      )
+      prevTodos.map((todo) => {
+        if (todo.id === id) {
+          const newCompletedState = !todo.completed;
+          
+          // If the todo has subtasks, update them to match the todo's completion state
+          if (todo.subtasks.length > 0) {
+            return {
+              ...todo,
+              completed: newCompletedState,
+              subtasks: todo.subtasks.map(subtask => ({
+                ...subtask,
+                completed: newCompletedState
+              })),
+              updatedAt: new Date()
+            };
+          }
+          
+          return {
+            ...todo,
+            completed: newCompletedState,
+            updatedAt: new Date()
+          };
+        }
+        return todo;
+      })
     );
   };
 
@@ -164,7 +186,7 @@ export const TodoProvider: React.FC<{ children: React.ReactNode }> = ({ children
     );
   };
 
-  // Toggle subtask completion and auto-complete parent if all subtasks are done
+  // Toggle subtask completion and update parent todo status accordingly
   const toggleSubtaskCompletion = (todoId: string, subtaskId: string) => {
     setTodos((prevTodos) => 
       prevTodos.map((todo) => {
@@ -178,11 +200,21 @@ export const TodoProvider: React.FC<{ children: React.ReactNode }> = ({ children
           const allSubtasksCompleted = updatedSubtasks.length > 0 && 
             updatedSubtasks.every(st => st.completed);
           
-          // If all subtasks are completed, also complete the parent task
+          // Check if any subtask is uncompleted - if so, parent should be uncompleted too
+          const anySubtaskUncompleted = updatedSubtasks.some(st => !st.completed);
+          
+          // Update parent task status based on subtasks
+          let newTodoCompletionStatus = todo.completed;
+          if (allSubtasksCompleted) {
+            newTodoCompletionStatus = true;
+          } else if (anySubtaskUncompleted) {
+            newTodoCompletionStatus = false;
+          }
+          
           return { 
             ...todo, 
             subtasks: updatedSubtasks,
-            completed: allSubtasksCompleted ? true : todo.completed,
+            completed: newTodoCompletionStatus,
             updatedAt: new Date()
           };
         }
