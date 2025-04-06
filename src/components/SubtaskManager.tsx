@@ -4,9 +4,10 @@ import { SubTask } from "@/types/todo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
-import { X, Plus, Check } from "lucide-react";
+import { X, Plus } from "lucide-react";
 import { useTodo } from "@/contexts/TodoContext";
 import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
 
 interface SubtaskManagerProps {
   todoId: string;
@@ -34,30 +35,37 @@ export function SubtaskManager({ todoId, subtasks, isEditing = false }: SubtaskM
   return (
     <div className="space-y-3">
       {subtasks.length > 0 && (
-        <div className="space-y-2">
+        <div className="flex flex-wrap gap-2 mb-2">
           {subtasks.map((subtask) => (
-            <div key={subtask.id} className="flex items-center gap-2 group">
+            <div key={subtask.id} className="flex items-center">
               <Checkbox
                 checked={subtask.completed}
                 onCheckedChange={() => toggleSubtaskCompletion(todoId, subtask.id)}
-                className={cn("transition-all duration-300")}
+                className={cn("mr-2 transition-all duration-300")}
               />
-              <span className={cn(
-                "flex-1 text-sm",
-                subtask.completed ? "line-through text-muted-foreground" : ""
-              )}>
-                {subtask.title}
-              </span>
-              {isEditing && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity"
-                  onClick={() => deleteSubtask(todoId, subtask.id)}
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              )}
+              <Badge 
+                variant="secondary"
+                className={cn(
+                  "px-2 py-1 flex items-center gap-1 text-xs",
+                  subtask.completed ? "opacity-60" : ""
+                )}
+              >
+                <span className={cn(
+                  subtask.completed ? "line-through text-muted-foreground" : ""
+                )}>
+                  {subtask.title}
+                </span>
+                {isEditing && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-4 w-4 ml-1 p-0"
+                    onClick={() => deleteSubtask(todoId, subtask.id)}
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
+                )}
+              </Badge>
             </div>
           ))}
         </div>

@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -9,10 +10,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Calendar as CalendarIcon, X, Plus } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { format } from "date-fns";
+import { format, isBefore, startOfDay } from "date-fns";
 import { cn } from "@/lib/utils";
 import { useTodo } from "@/contexts/TodoContext";
 import { Todo, Priority, SubTask } from "@/types/todo";
+import { Badge } from "@/components/ui/badge";
 
 interface TodoDialogProps {
   mode: "create" | "edit";
@@ -22,7 +24,7 @@ interface TodoDialogProps {
 }
 
 export function TodoDialog({ mode, todo, open, onOpenChange }: TodoDialogProps) {
-  const { addTodo, updateTodo, categories, addSubtask } = useTodo();
+  const { addTodo, updateTodo, categories, addSubtask, todos } = useTodo();
   
   const [title, setTitle] = useState(todo?.title || "");
   const [description, setDescription] = useState(todo?.description || "");
@@ -31,6 +33,8 @@ export function TodoDialog({ mode, todo, open, onOpenChange }: TodoDialogProps) 
   const [dueDate, setDueDate] = useState<Date | null>(todo?.dueDate || null);
   const [subtasks, setSubtasks] = useState<SubTask[]>(todo?.subtasks || []);
   const [newSubtaskTitle, setNewSubtaskTitle] = useState("");
+  
+  const today = startOfDay(new Date());
   
   const handleAddSubtask = () => {
     if (newSubtaskTitle.trim()) {
@@ -96,10 +100,18 @@ export function TodoDialog({ mode, todo, open, onOpenChange }: TodoDialogProps) 
   const preventSubmit = (e: React.MouseEvent) => {
     e.stopPropagation();
   };
+
+  // Function to get todos count for a specific date
+  const getTodosForDate = (date: Date) => {
+    return todos.filter(t => {
+      if (!t.dueDate) return false;
+      return format(new Date(t.dueDate), 'yyyy-MM-dd') === format(date, 'yyyy-MM-dd');
+    }).length;
+  };
   
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-[90%] max-w-[400px] animate-fade-in rounded-lg p-4">
+      <DialogContent className="w-[90%] max-w-[400px] animate-fade-in rounded-lg p-4 max-h-[90vh] overflow-y-auto">
         <DialogHeader className="pb-2">
           <DialogTitle className="text-lg font-semibold">
             {mode === "create" ? "Create Task" : "Edit Task"}
@@ -134,44 +146,47 @@ export function TodoDialog({ mode, todo, open, onOpenChange }: TodoDialogProps) 
 
           <div className="grid gap-1.5">
             <Label className="text-sm">Subtasks</Label>
-            <div className="space-y-2">
-              {subtasks.length > 0 && (
-                <div className="space-y-1.5">
-                  {subtasks.map((subtask) => (
-                    <div key={subtask.id} className="flex items-center gap-2 group">
-                      <span className="flex-1 text-xs">{subtask.title}</span>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
-                        onClick={() => handleDeleteSubtask(subtask.id)}
-                      >
-                        <X className="h-3 w-3" />
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              )}
-              
-              <div className="flex items-center gap-1.5">
-                <Input
-                  placeholder="Add a subtask..."
-                  value={newSubtaskTitle}
-                  onChange={(e) => setNewSubtaskTitle(e.target.value)}
-                  onKeyDown={handleSubtaskKeyDown}
-                  className="h-7 text-xs"
-                />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="h-7 w-7 shrink-0"
-                  onClick={handleAddSubtask}
+            
+            {/* Horizontal subtask tags display */}
+            <div className="flex flex-wrap gap-2 mb-2">
+              {subtasks.map((subtask) => (
+                <Badge 
+                  key={subtask.id} 
+                  variant="secondary"
+                  className="px-2 py-1 flex items-center gap-1 text-xs"
                 >
-                  <Plus className="h-3 w-3" />
-                </Button>
-              </div>
+                  {subtask.title}
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="h-4 w-4 ml-1 p-0"
+                    onClick={() => handleDeleteSubtask(subtask.id)}
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
+                </Badge>
+              ))}
+            </div>
+            
+            {/* Horizontal subtask input */}
+            <div className="flex items-center gap-1.5">
+              <Input
+                placeholder="Add a subtask..."
+                value={newSubtaskTitle}
+                onChange={(e) => setNewSubtaskTitle(e.target.value)}
+                onKeyDown={handleSubtaskKeyDown}
+                className="h-7 text-xs"
+              />
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7 shrink-0"
+                onClick={handleAddSubtask}
+              >
+                <Plus className="h-3 w-3" />
+              </Button>
             </div>
           </div>
           
@@ -241,7 +256,25 @@ export function TodoDialog({ mode, todo, open, onOpenChange }: TodoDialogProps) 
                   selected={dueDate || undefined}
                   onSelect={setDueDate}
                   initialFocus
-                  className="rounded-md"
+                  className="rounded-md pointer-events-auto"
+                  disabled={(date) => isBefore(date, today) && !format(date, 'yyyy-MM-dd').includes(format(today, 'yyyy-MM-dd'))}
+                  components={{
+                    DayContent: (props) => {
+                      const date = props.date;
+                      const todosCount = getTodosForDate(date);
+
+                      return (
+                        <div className="relative">
+                          <div>{props.date.getDate()}</div>
+                          {todosCount > 0 && (
+                            <span className="absolute bottom-0 right-0 -mr-1 -mb-1 flex items-center justify-center bg-primary text-[0.5rem] text-primary-foreground w-3 h-3 rounded-full">
+                              {todosCount}
+                            </span>
+                          )}
+                        </div>
+                      );
+                    }
+                  }}
                 />
               </PopoverContent>
             </Popover>
