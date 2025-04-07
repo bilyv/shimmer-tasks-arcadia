@@ -41,7 +41,7 @@ export function Navbar() {
           </h1>
         </div>
         
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 pr-3 md:pr-5">
           <Button 
             variant="ghost" 
             size="icon"

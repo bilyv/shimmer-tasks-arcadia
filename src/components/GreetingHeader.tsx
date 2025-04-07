@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 
 export function GreetingHeader() {
   const [greeting, setGreeting] = useState("");
+  const [isVisible, setIsVisible] = useState(false);
   const name = "Brian"; // This could be dynamic based on user data
   
   useEffect(() => {
@@ -16,14 +17,25 @@ export function GreetingHeader() {
     } else {
       setGreeting("Good evening");
     }
+    
+    // Add animation delay
+    const timer = setTimeout(() => {
+      setIsVisible(true);
+    }, 300);
+    
+    return () => clearTimeout(timer);
   }, []);
   
   return (
     <p className={cn(
-      "text-muted-foreground text-lg",
-      "animate-fade-in opacity-100"
+      "text-muted-foreground text-lg font-medium",
+      "transition-all duration-700 ease-in-out transform",
+      isVisible ? "translate-y-0 opacity-100" : "translate-y-3 opacity-0"
     )}>
-      {greeting}, {name}
+      <span className="bg-gradient-to-r from-arc-purple to-arc-blue bg-clip-text text-transparent font-semibold">
+        {greeting},
+      </span>{" "}
+      {name}
     </p>
   );
 }
