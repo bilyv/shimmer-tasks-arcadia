@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useTodo } from "@/contexts/TodoContext";
 import { cn } from "@/lib/utils";
@@ -33,12 +32,12 @@ interface TodoItemProps {
 }
 
 export function TodoItem({ todo, categoryColor, onShare }: TodoItemProps) {
-  const { toggleTodoCompleted, deleteTodo, getCategoryName } = useTodo();
+  const { toggleTodoCompletion, deleteTodo, getCategoryName } = useTodo();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
   
   const handleToggleCompleted = () => {
-    toggleTodoCompleted(todo.id);
+    toggleTodoCompletion(todo.id);
   };
   
   const handleDelete = () => {
