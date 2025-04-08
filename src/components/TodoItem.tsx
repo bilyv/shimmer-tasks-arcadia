@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useTodo } from "@/contexts/TodoContext";
 import { cn } from "@/lib/utils";
@@ -51,6 +52,12 @@ export function TodoItem({ todo, categoryColor, onShare }: TodoItemProps) {
   const handleDeleteConfirm = () => {
     deleteTodo(todo.id);
     setShowDeleteDialog(false);
+  };
+  
+  const handleShare = () => {
+    if (onShare && typeof onShare === 'function') {
+      onShare();
+    }
   };
   
   const categoryName = getCategoryName(todo.categoryId);
@@ -140,7 +147,7 @@ export function TodoItem({ todo, categoryColor, onShare }: TodoItemProps) {
               <Pencil className="mr-2 h-4 w-4" />
               Edit
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={onShare}>
+            <DropdownMenuItem onClick={handleShare}>
               <Share2 className="mr-2 h-4 w-4" />
               Share
             </DropdownMenuItem>
