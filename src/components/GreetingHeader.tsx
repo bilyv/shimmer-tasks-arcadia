@@ -21,15 +21,15 @@ export function GreetingHeader() {
     // Add animation delay
     const timer = setTimeout(() => {
       setIsVisible(true);
-    }, 300);
+    }, 200);
     
     return () => clearTimeout(timer);
   }, []);
   
   return (
     <p className={cn(
-      "text-muted-foreground text-lg font-medium",
-      "transition-all duration-700 ease-in-out transform",
+      "text-muted-foreground text-lg font-medium mb-1",
+      "transition-all duration-500 ease-in-out transform",
       isVisible ? "translate-y-0 opacity-100" : "translate-y-3 opacity-0"
     )}>
       <span className="bg-gradient-to-r from-arc-purple to-arc-blue bg-clip-text text-transparent font-semibold">

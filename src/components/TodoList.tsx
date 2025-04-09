@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useTodo } from "@/contexts/TodoContext";
 import { TodoItem } from "./TodoItem";
@@ -8,7 +7,6 @@ import { SearchAndFilters } from "./SearchAndFilters";
 import { StatsDisplay } from "./StatsDisplay";
 import { TodoDialog } from "./TodoDialog";
 import { GreetingHeader } from "./GreetingHeader";
-import { Navbar } from "./Navbar";
 import { Button } from "@/components/ui/button";
 import { Plus, CheckSquare, Calendar } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -41,10 +39,8 @@ export function TodoList() {
   const [filteredTodos, setFilteredTodos] = useState<Todo[]>([]);
   
   useEffect(() => {
-    // First, filter the todos
     let filtered = filterTodos(searchQuery, selectedCategory || undefined, showCompleted ? undefined : false, selectedDate);
     
-    // Then, sort them
     filtered = [...filtered].sort((a, b) => {
       switch (sortOrder) {
         case "newest":
@@ -88,10 +84,8 @@ export function TodoList() {
   
   return (
     <div className="min-h-screen pb-6">
-      <Navbar />
-      
-      <div className="container mx-auto px-4 py-6 max-w-4xl pt-24">
-        <header className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+      <div className="container mx-auto px-4 py-4 max-w-4xl">
+        <header className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-3">
           <div>
             <GreetingHeader />
             {selectedDate && (
