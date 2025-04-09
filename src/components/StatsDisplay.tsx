@@ -24,79 +24,79 @@ export function StatsDisplay() {
   }, []);
   
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-3 transform transition-all duration-500">
+    <div className="grid grid-cols-3 gap-3 transform transition-all duration-500">
       <Card className={cn(
-        "overflow-hidden rounded-lg shadow-sm hover:shadow-md transition-all duration-300 border-0",
-        "transform h-[85px]",
+        "overflow-hidden rounded-lg shadow-sm hover:shadow-md transition-all duration-300",
+        "transform",
         animate ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
       )} style={{ transitionDelay: "50ms" }}>
         <CardContent className="p-3 flex items-center justify-between">
           <div>
-            <h3 className="text-sm font-medium mb-1">Completed</h3>
-            <p className="text-2xl font-bold bg-gradient-to-br from-green-500 to-green-600 bg-clip-text text-transparent">
+            <h3 className="text-sm font-medium mb-0.5">Completed</h3>
+            <p className="text-xl font-bold bg-gradient-to-br from-green-500 to-green-600 bg-clip-text text-transparent">
               {completedTasksCount}
             </p>
           </div>
-          <div className="w-10 h-10 rounded-full flex items-center justify-center bg-green-100 dark:bg-green-900/30 shadow-inner">
-            <CheckCircle className="h-5 w-5 text-arc-green" />
+          <div className="w-8 h-8 rounded-full flex items-center justify-center bg-green-100 dark:bg-green-900/30 shadow-inner">
+            <CheckCircle className="h-4 w-4 text-arc-green" />
           </div>
         </CardContent>
         <Progress 
           value={(completedTasksCount / Math.max(todos.length, 1)) * 100} 
-          className="h-1.5 rounded-none bg-muted/50" 
+          className="h-1 rounded-none bg-muted/50" 
           indicatorClassName="bg-arc-green/90 rounded-r-xl" 
         />
       </Card>
       
       <Card className={cn(
-        "overflow-hidden rounded-lg shadow-sm hover:shadow-md transition-all duration-300 border-0",
-        "transform h-[85px]",
+        "overflow-hidden rounded-lg shadow-sm hover:shadow-md transition-all duration-300",
+        "transform",
         animate ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
       )} style={{ transitionDelay: "150ms" }}>
         <CardContent className="p-3 flex items-center justify-between">
           <div>
-            <h3 className="text-sm font-medium mb-1">Pending</h3>
-            <p className="text-2xl font-bold bg-gradient-to-br from-arc-blue to-blue-500 bg-clip-text text-transparent">
+            <h3 className="text-sm font-medium mb-0.5">Pending</h3>
+            <p className="text-xl font-bold bg-gradient-to-br from-arc-blue to-blue-500 bg-clip-text text-transparent">
               {pendingTasksCount}
             </p>
           </div>
-          <div className="w-10 h-10 rounded-full flex items-center justify-center bg-blue-100 dark:bg-blue-900/30 shadow-inner">
-            <Clock className="h-5 w-5 text-arc-blue" />
+          <div className="w-8 h-8 rounded-full flex items-center justify-center bg-blue-100 dark:bg-blue-900/30 shadow-inner">
+            <Clock className="h-4 w-4 text-arc-blue" />
           </div>
         </CardContent>
         <Progress 
           value={(pendingTasksCount / Math.max(todos.length, 1)) * 100} 
-          className="h-1.5 rounded-none bg-muted/50" 
+          className="h-1 rounded-none bg-muted/50" 
           indicatorClassName="bg-arc-blue/90 rounded-r-xl" 
         />
       </Card>
       
       <Card className={cn(
-        "overflow-hidden rounded-lg shadow-sm hover:shadow-md transition-all duration-300 border-0",
-        "transform h-[85px]",
+        "overflow-hidden rounded-lg shadow-sm hover:shadow-md transition-all duration-300",
+        "transform",
         animate ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
       )} style={{ transitionDelay: "250ms" }}>
         <CardContent className="p-3 flex items-center justify-between">
           <div>
-            <h3 className="text-sm font-medium mb-1">Urgent</h3>
-            <p className="text-2xl font-bold bg-gradient-to-br from-arc-red to-red-500 bg-clip-text text-transparent">
+            <h3 className="text-sm font-medium mb-0.5">Urgent</h3>
+            <p className="text-xl font-bold bg-gradient-to-br from-arc-red to-red-500 bg-clip-text text-transparent">
               {urgentTasksCount}
             </p>
           </div>
-          <div className="w-10 h-10 rounded-full flex items-center justify-center bg-red-100 dark:bg-red-900/30 shadow-inner">
-            <AlertCircle className="h-5 w-5 text-arc-red" />
+          <div className="w-8 h-8 rounded-full flex items-center justify-center bg-red-100 dark:bg-red-900/30 shadow-inner">
+            <AlertCircle className="h-4 w-4 text-arc-red" />
           </div>
         </CardContent>
         <Progress 
           value={(urgentTasksCount / Math.max(todos.length, 1)) * 100} 
-          className="h-1.5 rounded-none bg-muted/50" 
+          className="h-1 rounded-none bg-muted/50" 
           indicatorClassName="bg-arc-red/90 rounded-r-xl" 
         />
       </Card>
       
       <Card className={cn(
-        "overflow-hidden rounded-lg md:col-span-3 shadow-sm hover:shadow-md transition-all duration-300 border-0",
-        "transform h-[70px]",
+        "overflow-hidden rounded-lg col-span-3 shadow-sm hover:shadow-md transition-all duration-300",
+        "transform",
         animate ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
       )} style={{ transitionDelay: "350ms" }}>
         <CardContent className="p-3">
