@@ -3,7 +3,7 @@ import { ThemeToggle } from "./ThemeToggle";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { UserCircle, Users, LogOut, MessageSquare } from "lucide-react";
+import { UserCircle, Users, LogOut, MessageSquare, Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useState } from "react";
 import { FeedbackDialog } from "./FeedbackDialog";
+import { NotificationsPopover } from "./NotificationsPopover";
 
 export function Navbar() {
   const isMobile = useIsMobile();
@@ -41,16 +42,8 @@ export function Navbar() {
           </h1>
         </div>
         
-        <div className="flex items-center gap-2 pr-3 md:pr-5">
-          <Button 
-            variant="ghost" 
-            size="icon"
-            className="relative h-9 w-9 rounded-full"
-            onClick={() => setShowFeedbackDialog(true)}
-          >
-            <MessageSquare className="h-5 w-5" />
-            <span className="sr-only">Feedback</span>
-          </Button>
+        <div className="flex items-center gap-3 md:gap-4">
+          <NotificationsPopover />
           <ThemeToggle />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -76,6 +69,13 @@ export function Navbar() {
               <DropdownMenuItem className="text-xs md:text-sm py-1.5">
                 <Users className="mr-2 h-3.5 w-3.5" />
                 <span>Invite Friends</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem 
+                className="text-xs md:text-sm py-1.5"
+                onClick={() => setShowFeedbackDialog(true)}
+              >
+                <MessageSquare className="mr-2 h-3.5 w-3.5" />
+                <span>Feedback</span>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem className="text-xs md:text-sm py-1.5 text-red-600">
