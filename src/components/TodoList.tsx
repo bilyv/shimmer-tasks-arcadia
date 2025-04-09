@@ -8,8 +8,9 @@ import { SearchAndFilters } from "./SearchAndFilters";
 import { StatsDisplay } from "./StatsDisplay";
 import { TodoDialog } from "./TodoDialog";
 import { GreetingHeader } from "./GreetingHeader";
+import { Navbar } from "./Navbar";
 import { Button } from "@/components/ui/button";
-import { Plus, CheckSquare, Calendar, Share2 } from "lucide-react";
+import { Plus, CheckSquare, Calendar } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Todo } from "@/types/todo";
 import { TaskCalendarView } from "./TaskCalendarView";
@@ -24,7 +25,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { useToast } from "@/hooks/use-toast";
 
 export function TodoList() {
   const { todos, categories, filterTodos, clearCompletedTodos } = useTodo();
@@ -33,13 +33,10 @@ export function TodoList() {
   const [showCompleted, setShowCompleted] = useState(true);
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [showClearDialog, setShowClearDialog] = useState(false);
-  const [showShareDialog, setShowShareDialog] = useState(false);
-  const [selectedTodo, setSelectedTodo] = useState<Todo | null>(null);
   const [sortOrder, setSortOrder] = useState<"newest" | "oldest" | "priority">("newest");
   const [showCalendar, setShowCalendar] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const isMobile = useIsMobile();
-  const { toast } = useToast();
   
   const [filteredTodos, setFilteredTodos] = useState<Todo[]>([]);
   
@@ -86,40 +83,15 @@ export function TodoList() {
   const handleDateSelect = (date: Date | undefined) => {
     setSelectedDate(date);
   };
-
-  const handleShareTask = (todo: Todo) => {
-    setSelectedTodo(todo);
-    setShowShareDialog(true);
-  };
-
-  const handleShare = () => {
-    if (selectedTodo) {
-      // In a real app, this would generate and copy a sharing link
-      // For now, we'll just show a toast
-      navigator.clipboard.writeText(`Task: ${selectedTodo.title} - Share this to collaborate!`)
-        .then(() => {
-          toast({
-            title: "Link copied!",
-            description: "Share link has been copied to clipboard",
-          });
-          setShowShareDialog(false);
-        })
-        .catch(err => {
-          toast({
-            title: "Failed to copy link",
-            description: "Please try again",
-            variant: "destructive",
-          });
-        });
-    }
-  };
   
   const completedCount = todos.filter((todo) => todo.completed).length;
   
   return (
     <div className="min-h-screen pb-6">
-      <div className="container mx-auto px-4 py-4 max-w-4xl">
-        <header className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-4">
+      <Navbar />
+      
+      <div className="container mx-auto px-4 py-6 max-w-4xl pt-24">
+        <header className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
           <div>
             <GreetingHeader />
             {selectedDate && (
@@ -153,14 +125,14 @@ export function TodoList() {
         
         <StatsDisplay />
         
-        <div className="mt-5 mb-4">
+        <div className="mt-8 mb-6">
           <CategorySelect
             selectedCategory={selectedCategory}
             onCategoryChange={setSelectedCategory}
           />
         </div>
         
-        <div className="mb-4">
+        <div className="mb-6">
           <SearchAndFilters
             searchQuery={searchQuery}
             onSearchQueryChange={setSearchQuery}
@@ -187,7 +159,6 @@ export function TodoList() {
                 key={todo.id}
                 todo={todo}
                 categoryColor={getCategoryColor(todo.categoryId)}
-                onShare={() => handleShareTask(todo)}
               />
             ))
           ) : (
@@ -230,32 +201,6 @@ export function TodoList() {
                 className="bg-destructive hover:bg-destructive/90"
               >
                 Clear
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-
-        <AlertDialog open={showShareDialog} onOpenChange={setShowShareDialog}>
-          <AlertDialogContent className="rounded-xl animate-fade-in">
-            <AlertDialogHeader>
-              <AlertDialogTitle>Share this task</AlertDialogTitle>
-              <AlertDialogDescription>
-                Share this task with your team members or friends to collaborate.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <div className="flex items-center gap-2 bg-muted/50 p-3 rounded-md my-2">
-              <Share2 className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm truncate">
-                {selectedTodo?.title}
-              </span>
-            </div>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction
-                onClick={handleShare}
-                className="bg-primary hover:bg-primary/90"
-              >
-                Copy Link
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
