@@ -76,13 +76,14 @@ function useDock() {
 function Dock({
   children,
   className,
-  spring = { mass: 0.1, stiffness: 150, damping: 12 },
+  spring = { mass: 0.2, stiffness: 180, damping: 20 }, // Adjusted spring for smoother animation
   magnification = DEFAULT_MAGNIFICATION,
   distance = DEFAULT_DISTANCE,
   panelHeight = DEFAULT_PANEL_HEIGHT,
 }: DockProps) {
   const mouseX = useMotionValue(Infinity);
   const isHovered = useMotionValue(0);
+  const [isMouseOver, setIsMouseOver] = useState(false);
 
   const maxHeight = useMemo(() => {
     return Math.max(DOCK_HEIGHT, magnification + magnification / 2 + 4);
@@ -90,6 +91,18 @@ function Dock({
 
   const heightRow = useTransform(isHovered, [0, 1], [panelHeight, maxHeight]);
   const height = useSpring(heightRow, spring);
+
+  // Debounce the mouse leave to prevent flickering
+  useEffect(() => {
+    let timeout: NodeJS.Timeout;
+    if (!isMouseOver) {
+      timeout = setTimeout(() => {
+        mouseX.set(Infinity);
+        isHovered.set(0);
+      }, 100);
+    }
+    return () => clearTimeout(timeout);
+  }, [isMouseOver, mouseX, isHovered]);
 
   return (
     <motion.div
@@ -100,16 +113,22 @@ function Dock({
       className='mx-2 flex max-w-full items-end overflow-x-auto'
     >
       <motion.div
-        onMouseMove={({ pageX }) => {
+        onMouseMove={({ clientX, currentTarget }) => {
+          // Using clientX and getBoundingClientRect for more accurate positioning
+          const rect = currentTarget.getBoundingClientRect();
+          const relativeX = clientX - rect.left;
           isHovered.set(1);
-          mouseX.set(pageX);
+          mouseX.set(relativeX);
+          setIsMouseOver(true);
+        }}
+        onMouseEnter={() => {
+          setIsMouseOver(true);
         }}
         onMouseLeave={() => {
-          isHovered.set(0);
-          mouseX.set(Infinity);
+          setIsMouseOver(false);
         }}
         className={cn(
-          'mx-auto flex w-fit gap-4 rounded-2xl bg-gray-50 px-4 dark:bg-neutral-900',
+          'mx-auto flex w-fit gap-4 rounded-2xl bg-gray-50/90 px-4 backdrop-blur-sm dark:bg-neutral-900/90',
           className
         )}
         style={{ height: panelHeight }}
@@ -126,34 +145,58 @@ function Dock({
 
 function DockItem({ children, className }: DockItemProps) {
   const ref = useRef<HTMLDivElement>(null);
-
   const { distance, magnification, mouseX, spring } = useDock();
-
   const isHovered = useMotionValue(0);
+  const [isItemHovered, setIsItemHovered] = useState(false);
 
+  // Calculate mouse distance with improved accuracy
   const mouseDistance = useTransform(mouseX, (val) => {
-    const domRect = ref.current?.getBoundingClientRect() ?? { x: 0, width: 0 };
-    return val - domRect.x - domRect.width / 2;
+    if (!ref.current) return distance; // Return large value when not rendered
+    const domRect = ref.current.getBoundingClientRect();
+    const itemCenter = domRect.left + domRect.width / 2;
+    // Calculate distance from window left plus the mouse position
+    return val - (itemCenter - domRect.left);
   });
 
+  // Apply smoother width transform
   const widthTransform = useTransform(
     mouseDistance,
     [-distance, 0, distance],
-    [40, magnification, 40]
+    [40, magnification, 40],
+    {
+      clamp: false // Allow smoother transitions
+    }
   );
 
-  const width = useSpring(widthTransform, spring);
+  // Apply smoother spring for width animation
+  const width = useSpring(widthTransform, {
+    ...spring,
+    stiffness: spring.stiffness * 1.2, // Slightly stiffer for item width
+  });
 
   return (
     <motion.div
       ref={ref}
       style={{ width }}
-      onHoverStart={() => isHovered.set(1)}
-      onHoverEnd={() => isHovered.set(0)}
-      onFocus={() => isHovered.set(1)}
-      onBlur={() => isHovered.set(0)}
+      onHoverStart={() => {
+        isHovered.set(1);
+        setIsItemHovered(true);
+      }}
+      onHoverEnd={() => {
+        isHovered.set(0);
+        setIsItemHovered(false);
+      }}
+      onFocus={() => {
+        isHovered.set(1);
+        setIsItemHovered(true);
+      }}
+      onBlur={() => {
+        isHovered.set(0);
+        setIsItemHovered(false);
+      }}
       className={cn(
-        'relative inline-flex items-center justify-center',
+        'relative inline-flex items-center justify-center transition-all',
+        isItemHovered ? 'z-10' : 'z-0',
         className
       )}
       tabIndex={0}
@@ -189,7 +232,7 @@ function DockLabel({ children, className, ...rest }: DockLabelProps) {
           exit={{ opacity: 0, y: 0 }}
           transition={{ duration: 0.2 }}
           className={cn(
-            'absolute -top-6 left-1/2 w-fit whitespace-pre rounded-md border border-gray-200 bg-gray-100 px-2 py-0.5 text-xs text-neutral-700 dark:border-neutral-900 dark:bg-neutral-800 dark:text-white',
+            'absolute -top-6 left-1/2 w-fit whitespace-pre rounded-md border border-gray-200 bg-gray-100 px-2 py-0.5 text-xs text-neutral-700 dark:border-neutral-900 dark:bg-neutral-800 dark:text-white shadow-sm',
             className
           )}
           role='tooltip'
@@ -206,7 +249,8 @@ function DockIcon({ children, className, ...rest }: DockIconProps) {
   const restProps = rest as Record<string, unknown>;
   const width = restProps['width'] as MotionValue<number>;
 
-  const widthTransform = useTransform(width, (val) => val / 2);
+  // Slightly modified transform calculation for better proportions
+  const widthTransform = useTransform(width, (val) => Math.max(val / 2, 20));
 
   return (
     <motion.div
