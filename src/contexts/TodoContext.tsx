@@ -118,10 +118,17 @@ export const TodoProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setTodos((prevTodos) => 
       prevTodos.map((todo) => {
         if (todo.id === id) {
-          // Only toggle the main task without affecting subtasks
+          // When toggling the main task, also toggle all subtasks to match
+          const newCompletedState = !todo.completed;
+          const updatedSubtasks = todo.subtasks.map(subtask => ({
+            ...subtask,
+            completed: newCompletedState
+          }));
+          
           return {
             ...todo,
-            completed: !todo.completed,
+            completed: newCompletedState,
+            subtasks: updatedSubtasks,
             updatedAt: new Date()
           };
         }
@@ -172,19 +179,34 @@ export const TodoProvider: React.FC<{ children: React.ReactNode }> = ({ children
     );
   };
 
-  // Toggle subtask completion - REVERTED to previous behavior
+  // Toggle subtask completion and update parent todo completion status
   const toggleSubtaskCompletion = (todoId: string, subtaskId: string) => {
     setTodos((prevTodos) => 
       prevTodos.map((todo) => {
         if (todo.id === todoId) {
-          // Toggle only the specified subtask without affecting parent todo
+          // Toggle the specified subtask
           const updatedSubtasks = todo.subtasks.map((st) => 
             st.id === subtaskId ? { ...st, completed: !st.completed } : st
           );
           
+          // Get the subtask that was toggled
+          const toggledSubtask = updatedSubtasks.find(st => st.id === subtaskId);
+          
+          let todoCompleted = todo.completed;
+          
+          // If a subtask is being unchecked, the parent todo should also be unchecked
+          if (toggledSubtask && !toggledSubtask.completed) {
+            todoCompleted = false;
+          } 
+          // If all subtasks are now completed, the parent should be completed
+          else if (updatedSubtasks.length > 0 && updatedSubtasks.every(st => st.completed)) {
+            todoCompleted = true;
+          }
+          
           return { 
             ...todo, 
             subtasks: updatedSubtasks,
+            completed: todoCompleted,
             updatedAt: new Date()
           };
         }
