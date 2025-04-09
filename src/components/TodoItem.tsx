@@ -4,7 +4,7 @@ import { Todo, Priority } from "@/types/todo";
 import { useTodo } from "@/contexts/TodoContext";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
-import { Check, Trash2, Edit, Calendar, AlertCircle, ChevronDown, ChevronUp } from "lucide-react";
+import { Check, Trash2, Edit, Calendar, AlertCircle, ChevronDown, ChevronUp, Share2 } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   DropdownMenu,
@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { TodoDialog } from "./TodoDialog";
 import { SubtaskManager } from "./SubtaskManager";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { toast } from "sonner";
 
 interface TodoItemProps {
   todo: Todo;
@@ -35,6 +36,15 @@ export function TodoItem({ todo, categoryColor }: TodoItemProps) {
 
   const handleDelete = () => {
     deleteTodo(todo.id);
+  };
+
+  const handleShare = () => {
+    // In a real application, this would open a share dialog or copy a shareable link
+    navigator.clipboard.writeText(`Task: ${todo.title} - Due: ${todo.dueDate ? format(new Date(todo.dueDate), "MMM d, yyyy") : "No due date"}`);
+    toast.success("Task details copied to clipboard", {
+      description: "You can now share it with others",
+      duration: 3000,
+    });
   };
 
   const getPriorityColor = (priority: Priority) => {
@@ -135,6 +145,10 @@ export function TodoItem({ todo, categoryColor }: TodoItemProps) {
                     <DropdownMenuItem onClick={() => setShowEditDialog(true)}>
                       <Edit className="mr-2 h-4 w-4" />
                       Edit
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleShare}>
+                      <Share2 className="mr-2 h-4 w-4" />
+                      Share
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={handleDelete} className="text-destructive">

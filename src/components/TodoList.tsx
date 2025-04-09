@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useTodo } from "@/contexts/TodoContext";
 import { TodoItem } from "./TodoItem";
@@ -84,8 +85,8 @@ export function TodoList() {
   
   return (
     <div className="min-h-screen pb-6">
-      <div className="container mx-auto px-4 py-4 max-w-4xl">
-        <header className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-3">
+      <div className="container mx-auto px-4 py-2 max-w-4xl">
+        <header className="flex flex-col md:flex-row justify-between items-start md:items-center mb-5 gap-3">
           <div>
             <GreetingHeader />
             {selectedDate && (
@@ -119,14 +120,14 @@ export function TodoList() {
         
         <StatsDisplay />
         
-        <div className="mt-8 mb-6">
+        <div className="mt-6 mb-5">
           <CategorySelect
             selectedCategory={selectedCategory}
             onCategoryChange={setSelectedCategory}
           />
         </div>
         
-        <div className="mb-6">
+        <div className="mb-5">
           <SearchAndFilters
             searchQuery={searchQuery}
             onSearchQueryChange={setSearchQuery}
