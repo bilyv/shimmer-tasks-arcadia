@@ -1,7 +1,6 @@
-
 import { useState, useEffect } from "react";
 import { useTodo } from "@/contexts/TodoContext";
-import { TodoItem } from "./TodoItem";
+import { TodoItem } from "./todo/TodoItem";
 import { EmptyState } from "./EmptyState";
 import { CategorySelect } from "./CategorySelect";
 import { SearchAndFilters } from "./SearchAndFilters";
