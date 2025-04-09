@@ -8,9 +8,9 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-muted/30">
       <Navbar />
-      <main className="container mx-auto px-4 pt-8">
+      <main className="container mx-auto px-4 pt-4">
         <AppDock />
-        <div className="mt-4">
+        <div className="mt-2">
           <GreetingHeader />
         </div>
         <TodoList />

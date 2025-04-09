@@ -4,7 +4,7 @@ import { Todo, Priority } from "@/types/todo";
 import { useTodo } from "@/contexts/TodoContext";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
-import { Check, Trash2, Edit, Calendar, AlertCircle, ChevronDown, ChevronUp } from "lucide-react";
+import { Check, Trash2, Edit, Calendar, AlertCircle, ChevronDown, ChevronUp, Share2 } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   DropdownMenu,
@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { TodoDialog } from "./TodoDialog";
 import { SubtaskManager } from "./SubtaskManager";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { toast } from "@/components/ui/use-toast";
 
 interface TodoItemProps {
   todo: Todo;
@@ -35,6 +36,29 @@ export function TodoItem({ todo, categoryColor }: TodoItemProps) {
 
   const handleDelete = () => {
     deleteTodo(todo.id);
+  };
+  
+  const handleShare = () => {
+    // In a real app, this would open a share dialog with options
+    // For now, we'll just simulate copying to clipboard
+    
+    // Create shareable text
+    const shareText = `Task: ${todo.title}\nPriority: ${getPriorityLabel(todo.priority)}\n${todo.description || ''}`;
+    
+    // Copy to clipboard
+    navigator.clipboard.writeText(shareText).then(() => {
+      toast({
+        title: "Copied to clipboard",
+        description: "Task details copied and ready to share!",
+        duration: 3000,
+      });
+    }).catch(() => {
+      toast({
+        title: "Couldn't copy to clipboard",
+        description: "Please try again or share manually",
+        variant: "destructive",
+      });
+    });
   };
 
   const getPriorityColor = (priority: Priority) => {
@@ -135,6 +159,10 @@ export function TodoItem({ todo, categoryColor }: TodoItemProps) {
                     <DropdownMenuItem onClick={() => setShowEditDialog(true)}>
                       <Edit className="mr-2 h-4 w-4" />
                       Edit
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleShare}>
+                      <Share2 className="mr-2 h-4 w-4" />
+                      Share
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={handleDelete} className="text-destructive">
