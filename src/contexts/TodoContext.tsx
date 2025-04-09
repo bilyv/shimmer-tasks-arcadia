@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { Todo, SubTask, Category, Priority, DEFAULT_CATEGORIES } from "@/types/todo";
 import { useToast } from "@/hooks/use-toast";
@@ -25,6 +24,7 @@ interface TodoContextType {
   getTodosByCategory: (categoryId: string) => Todo[];
   getCompletionRate: () => number;
   getTodoCountForDate: (date: Date) => number;
+  getCategoryName: (categoryId: string) => string;
 }
 
 // Create the context
@@ -262,6 +262,12 @@ export const TodoProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }).length;
   };
 
+  // Add the new getCategoryName function
+  const getCategoryName = (categoryId: string): string => {
+    const category = categories.find((cat) => cat.id === categoryId);
+    return category?.name || "Uncategorized";
+  };
+
   const value = {
     todos,
     categories,
@@ -277,6 +283,7 @@ export const TodoProvider: React.FC<{ children: React.ReactNode }> = ({ children
     getTodosByCategory,
     getCompletionRate,
     getTodoCountForDate,
+    getCategoryName,
   };
 
   return <TodoContext.Provider value={value}>{children}</TodoContext.Provider>;

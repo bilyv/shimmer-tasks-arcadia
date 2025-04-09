@@ -33,12 +33,12 @@ interface TodoItemProps {
 }
 
 export function TodoItem({ todo, categoryColor, onShare }: TodoItemProps) {
-  const { toggleTodoCompleted, deleteTodo, getCategoryName } = useTodo();
+  const { toggleTodoCompletion, deleteTodo, getCategoryName } = useTodo();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
   
   const handleToggleCompleted = () => {
-    toggleTodoCompleted(todo.id);
+    toggleTodoCompletion(todo.id);
   };
   
   const handleDelete = () => {
@@ -52,6 +52,12 @@ export function TodoItem({ todo, categoryColor, onShare }: TodoItemProps) {
   const handleDeleteConfirm = () => {
     deleteTodo(todo.id);
     setShowDeleteDialog(false);
+  };
+  
+  const handleShare = () => {
+    if (onShare && typeof onShare === 'function') {
+      onShare();
+    }
   };
   
   const categoryName = getCategoryName(todo.categoryId);
@@ -141,7 +147,7 @@ export function TodoItem({ todo, categoryColor, onShare }: TodoItemProps) {
               <Pencil className="mr-2 h-4 w-4" />
               Edit
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={onShare}>
+            <DropdownMenuItem onClick={handleShare}>
               <Share2 className="mr-2 h-4 w-4" />
               Share
             </DropdownMenuItem>
