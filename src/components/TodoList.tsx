@@ -14,6 +14,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { Todo } from "@/types/todo";
 import { TaskCalendarView } from "./TaskCalendarView";
 import { format } from "date-fns";
+import { groupTodosByDate, DateGroup } from "@/utils/dateUtils";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -38,6 +39,7 @@ export function TodoList() {
   const isMobile = useIsMobile();
   
   const [filteredTodos, setFilteredTodos] = useState<Todo[]>([]);
+  const [groupedTodos, setGroupedTodos] = useState<Map<DateGroup, Todo[]>>(new Map());
   
   useEffect(() => {
     let filtered = filterTodos(searchQuery, selectedCategory || undefined, showCompleted ? undefined : false, selectedDate);
@@ -58,6 +60,10 @@ export function TodoList() {
     });
     
     setFilteredTodos(filtered);
+    
+    // Group todos by date
+    const grouped = groupTodosByDate(filtered);
+    setGroupedTodos(grouped);
   }, [todos, selectedCategory, searchQuery, showCompleted, sortOrder, filterTodos, selectedDate]);
   
   const getCategoryColor = (categoryId: string) => {
@@ -149,12 +155,23 @@ export function TodoList() {
         
         <div className="space-y-4">
           {filteredTodos.length > 0 ? (
-            filteredTodos.map((todo) => (
-              <TodoItem
-                key={todo.id}
-                todo={todo}
-                categoryColor={getCategoryColor(todo.categoryId)}
-              />
+            Array.from(groupedTodos.entries()).map(([dateGroup, groupTodos]) => (
+              <div key={dateGroup} className="mb-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="h-px bg-muted flex-grow"></div>
+                  <h3 className="text-sm font-medium text-muted-foreground px-2">{dateGroup}</h3>
+                  <div className="h-px bg-muted flex-grow"></div>
+                </div>
+                <div className="space-y-4">
+                  {groupTodos.map((todo) => (
+                    <TodoItem
+                      key={todo.id}
+                      todo={todo}
+                      categoryColor={getCategoryColor(todo.categoryId)}
+                    />
+                  ))}
+                </div>
+              </div>
             ))
           ) : (
             <EmptyState
