@@ -2,9 +2,14 @@
 import { TodoList } from "@/components/TodoList";
 import { Navbar } from "@/components/Navbar";
 import { useTheme } from "@/contexts/ThemeContext";
+import { NavigationSidebar } from "@/components/NavigationSidebar";
+import { BottomTabBar } from "@/components/BottomTabBar";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { cn } from "@/lib/utils";
 
 const Index = () => {
   const { theme } = useTheme();
+  const isMobile = useIsMobile();
   
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-muted/30 relative">
@@ -23,9 +28,14 @@ const Index = () => {
       )}
       
       <Navbar />
-      <main className="container mx-auto px-4 pt-16">
+      <NavigationSidebar />
+      <main className={cn(
+        "container mx-auto px-4 pt-16",
+        isMobile ? "pb-20" : "md:pl-20"  // Add padding for sidebar/bottom bar
+      )}>
         <TodoList />
       </main>
+      <BottomTabBar />
     </div>
   );
 };
