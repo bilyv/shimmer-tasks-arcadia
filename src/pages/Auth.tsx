@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, Navigate } from "react-router-dom";
 import { FcGoogle } from "react-icons/fc";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,19 @@ const Auth = () => {
   const [username, setUsername] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("login");
+  const [viewportHeight, setViewportHeight] = useState(window.innerHeight);
+
+  // Handle viewport height for mobile browsers
+  useEffect(() => {
+    const updateViewportHeight = () => {
+      setViewportHeight(window.innerHeight);
+    };
+
+    window.addEventListener('resize', updateViewportHeight);
+    updateViewportHeight();
+
+    return () => window.removeEventListener('resize', updateViewportHeight);
+  }, []);
 
   // Redirect if already authenticated
   if (isAuthenticated) {
@@ -50,15 +63,18 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-muted/30 flex flex-col items-center justify-center p-4">
+    <div 
+      className="flex flex-col items-center justify-between w-full bg-gradient-to-br from-background to-muted/30 py-8 px-4"
+      style={{ minHeight: `${viewportHeight}px` }}
+    >
       {/* Background pattern */}
-      <div className="absolute inset-0 -z-10 h-full w-full bg-white dark:bg-black bg-[linear-gradient(to_right,#f0f0f01a_1px,transparent_1px),linear-gradient(to_bottom,#f0f0f01a_1px,transparent_1px)] bg-[size:14px_24px]">
+      <div className="fixed inset-0 -z-10 h-full w-full bg-white dark:bg-black bg-[linear-gradient(to_right,#f0f0f01a_1px,transparent_1px),linear-gradient(to_bottom,#f0f0f01a_1px,transparent_1px)] bg-[size:14px_24px]">
         <div className="absolute left-0 right-0 top-0 -z-10 m-auto h-[310px] w-[310px] rounded-full bg-fuchsia-400 dark:bg-purple-700 opacity-20 blur-[100px]"></div>
       </div>
 
-      <div className="w-full max-w-md space-y-8">
+      <div className="w-full max-w-md flex-1 flex flex-col justify-center py-6">
         {/* Logo/Branding */}
-        <div className="flex flex-col items-center text-center space-y-2">
+        <div className="flex flex-col items-center text-center space-y-2 mb-8">
           <div className="h-12 w-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-6 w-6">
               <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
@@ -155,6 +171,11 @@ const Auth = () => {
             </CardFooter>
           </Card>
         </Tabs>
+      </div>
+      
+      {/* Footer space to ensure content is not cut off */}
+      <div className="w-full text-center text-xs text-muted-foreground mt-8 pb-4">
+        &copy; {new Date().getFullYear()} Arce Todo
       </div>
     </div>
   );
