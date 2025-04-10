@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useTodo } from "@/contexts/TodoContext";
 import { TodoItem } from "./TodoItem";
@@ -9,12 +8,13 @@ import { StatsDisplay } from "./StatsDisplay";
 import { TodoDialog } from "./TodoDialog";
 import { GreetingHeader } from "./GreetingHeader";
 import { Button } from "@/components/ui/button";
-import { Plus, CheckSquare, Calendar } from "lucide-react";
+import { CheckSquare, Calendar } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Todo } from "@/types/todo";
 import { TaskCalendarView } from "./TaskCalendarView";
 import { format } from "date-fns";
 import { groupTodosByDate, DateGroup } from "@/utils/dateUtils";
+import { useNavigate } from "react-router-dom";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -31,12 +31,12 @@ export function TodoList() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [showCompleted, setShowCompleted] = useState(true);
-  const [showAddDialog, setShowAddDialog] = useState(false);
   const [showClearDialog, setShowClearDialog] = useState(false);
   const [sortOrder, setSortOrder] = useState<"newest" | "oldest" | "priority">("newest");
   const [showCalendar, setShowCalendar] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const isMobile = useIsMobile();
+  const navigate = useNavigate();
   
   const [filteredTodos, setFilteredTodos] = useState<Todo[]>([]);
   const [groupedTodos, setGroupedTodos] = useState<Map<DateGroup, Todo[]>>(new Map());
@@ -71,10 +71,6 @@ export function TodoList() {
     return category?.color || "#8E9196";
   };
   
-  const handleAddTask = () => {
-    setShowAddDialog(true);
-  };
-  
   const handleClearCompleted = () => {
     setShowClearDialog(true);
   };
@@ -85,6 +81,10 @@ export function TodoList() {
   
   const handleDateSelect = (date: Date | undefined) => {
     setSelectedDate(date);
+  };
+  
+  const navigateToCreate = () => {
+    navigate('/create');
   };
   
   const completedCount = todos.filter((todo) => todo.completed).length;
@@ -116,11 +116,6 @@ export function TodoList() {
                 </span>
               </Button>
             )}
-            
-            <Button onClick={handleAddTask} className="arc-gradient hover:opacity-90 gap-2">
-              <Plus className="h-4 w-4" />
-              {isMobile ? "Add" : "Add Task"}
-            </Button>
           </div>
         </header>
         
@@ -184,16 +179,10 @@ export function TodoList() {
                     : "You don't have any tasks yet. Add your first task to get started!"
               }
               actionLabel={searchQuery || selectedDate ? undefined : "Add Your First Task"}
-              onAction={searchQuery || selectedDate ? undefined : handleAddTask}
+              onAction={searchQuery || selectedDate ? undefined : navigateToCreate}
             />
           )}
         </div>
-        
-        <TodoDialog
-          mode="create"
-          open={showAddDialog}
-          onOpenChange={setShowAddDialog}
-        />
         
         <AlertDialog open={showClearDialog} onOpenChange={setShowClearDialog}>
           <AlertDialogContent className="rounded-xl animate-fade-in">
