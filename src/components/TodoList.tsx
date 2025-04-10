@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useTodo } from "@/contexts/TodoContext";
 import { TodoItem } from "./TodoItem";
@@ -13,8 +14,6 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { Todo } from "@/types/todo";
 import { TaskCalendarView } from "./TaskCalendarView";
 import { format } from "date-fns";
-import { getDateGroup, sortDateGroups, type DateGroup } from "@/utils/dateUtils";
-import { Separator } from "@/components/ui/separator";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -39,7 +38,6 @@ export function TodoList() {
   const isMobile = useIsMobile();
   
   const [filteredTodos, setFilteredTodos] = useState<Todo[]>([]);
-  const [groupedTodos, setGroupedTodos] = useState<Record<DateGroup, Todo[]>>({});
   
   useEffect(() => {
     let filtered = filterTodos(searchQuery, selectedCategory || undefined, showCompleted ? undefined : false, selectedDate);
@@ -60,17 +58,6 @@ export function TodoList() {
     });
     
     setFilteredTodos(filtered);
-    
-    const groups: Record<DateGroup, Todo[]> = {};
-    filtered.forEach(todo => {
-      const dateGroup = getDateGroup(todo.dueDate);
-      if (!groups[dateGroup]) {
-        groups[dateGroup] = [];
-      }
-      groups[dateGroup].push(todo);
-    });
-    
-    setGroupedTodos(groups);
   }, [todos, selectedCategory, searchQuery, showCompleted, sortOrder, filterTodos, selectedDate]);
   
   const getCategoryColor = (categoryId: string) => {
@@ -161,25 +148,13 @@ export function TodoList() {
         )}
         
         <div className="space-y-4">
-          {Object.keys(groupedTodos).length > 0 ? (
-            sortDateGroups(Object.keys(groupedTodos) as DateGroup[]).map((dateGroup) => (
-              <div key={dateGroup} className="mb-8">
-                <div className="flex items-center gap-2 mb-3">
-                  <div className="text-sm font-medium text-muted-foreground px-2 py-1 bg-muted/50 rounded-md">
-                    {dateGroup}
-                  </div>
-                  <Separator className="flex-grow opacity-30" />
-                </div>
-                <div className="space-y-4">
-                  {groupedTodos[dateGroup].map((todo) => (
-                    <TodoItem
-                      key={todo.id}
-                      todo={todo}
-                      categoryColor={getCategoryColor(todo.categoryId)}
-                    />
-                  ))}
-                </div>
-              </div>
+          {filteredTodos.length > 0 ? (
+            filteredTodos.map((todo) => (
+              <TodoItem
+                key={todo.id}
+                todo={todo}
+                categoryColor={getCategoryColor(todo.categoryId)}
+              />
             ))
           ) : (
             <EmptyState
