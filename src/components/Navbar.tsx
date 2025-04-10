@@ -1,4 +1,3 @@
-
 import { ThemeToggle } from "./ThemeToggle";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
@@ -16,16 +15,18 @@ import {
 import { useState } from "react";
 import { FeedbackDialog } from "./FeedbackDialog";
 import { NotificationsPopover } from "./NotificationsPopover";
+import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 export function Navbar() {
   const isMobile = useIsMobile();
   const [showFeedbackDialog, setShowFeedbackDialog] = useState(false);
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
   
-  // This would come from your auth context in a real app
-  const user = {
-    name: "John Doe",
-    email: "john@example.com",
-    avatarUrl: "https://github.com/shadcn.png",
+  const handleLogout = () => {
+    logout();
+    navigate("/auth");
   };
 
   return (
@@ -49,7 +50,7 @@ export function Navbar() {
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="relative h-7 w-7 md:h-8 md:w-8 rounded-full p-0">
                 <Avatar className="h-7 w-7 md:h-8 md:w-8">
-                  <AvatarImage src={user.avatarUrl} alt={user.name} />
+                  <AvatarImage src={user?.avatar} alt={user?.username} />
                   <AvatarFallback>
                     <UserCircle className="h-5 w-5 md:h-6 md:w-6" />
                   </AvatarFallback>
@@ -59,9 +60,9 @@ export function Navbar() {
             <DropdownMenuContent className="w-[180px] md:w-[200px]" align="end" forceMount>
               <DropdownMenuLabel className="font-normal py-2">
                 <div className="flex flex-col space-y-0.5">
-                  <p className="text-xs md:text-sm font-medium leading-none">{user.name}</p>
+                  <p className="text-xs md:text-sm font-medium leading-none">{user?.username || "Guest"}</p>
                   <p className="text-[10px] md:text-xs leading-none text-muted-foreground">
-                    {user.email}
+                    {user?.username ? `@${user.username.toLowerCase()}` : "Not logged in"}
                   </p>
                 </div>
               </DropdownMenuLabel>
@@ -78,7 +79,10 @@ export function Navbar() {
                 <span>Send Feedback</span>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="text-xs md:text-sm py-1.5 text-red-600">
+              <DropdownMenuItem 
+                className="text-xs md:text-sm py-1.5 text-red-600"
+                onClick={handleLogout}
+              >
                 <LogOut className="mr-2 h-3.5 w-3.5" />
                 <span>Log out</span>
               </DropdownMenuItem>
