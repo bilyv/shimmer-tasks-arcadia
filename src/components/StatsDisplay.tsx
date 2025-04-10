@@ -117,8 +117,3 @@ export function StatsDisplay() {
     </div>
   );
 }
-
-// Helper function to conditionally join classNames
-function cn(...classes) {
-  return classes.filter(Boolean).join(' ');
-}
