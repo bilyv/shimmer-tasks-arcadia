@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Todo, Priority } from "@/types/todo";
 import { useTodo } from "@/contexts/TodoContext";
@@ -18,6 +17,13 @@ import { TodoDialog } from "./TodoDialog";
 import { SubtaskManager } from "./SubtaskManager";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { toast } from "sonner";
+import { ProgressCircle } from "@/components/ui/progress-circle";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface TodoItemProps {
   todo: Todo;
@@ -39,7 +45,6 @@ export function TodoItem({ todo, categoryColor }: TodoItemProps) {
   };
 
   const handleShare = () => {
-    // In a real application, this would open a share dialog or copy a shareable link
     navigator.clipboard.writeText(`Task: ${todo.title} - Due: ${todo.dueDate ? format(new Date(todo.dueDate), "MMM d, yyyy") : "No due date"}`);
     toast.success("Task details copied to clipboard", {
       description: "You can now share it with others",
@@ -66,6 +71,9 @@ export function TodoItem({ todo, categoryColor }: TodoItemProps) {
   
   const completedSubtasks = todo.subtasks.filter(st => st.completed).length;
   const hasSubtasks = todo.subtasks.length > 0;
+  const completionPercentage = hasSubtasks 
+    ? Math.round((completedSubtasks / todo.subtasks.length) * 100) 
+    : todo.completed ? 100 : 0;
 
   return (
     <>
@@ -109,6 +117,43 @@ export function TodoItem({ todo, categoryColor }: TodoItemProps) {
               </h3>
               
               <div className="flex gap-1">
+                {(hasSubtasks || todo.completed) && (
+                  <TooltipProvider>
+                    <Tooltip delayDuration={300}>
+                      <TooltipTrigger asChild>
+                        <div className="flex items-center">
+                          <ProgressCircle 
+                            value={completionPercentage} 
+                            size="sm" 
+                            color={todo.completed ? categoryColor : undefined}
+                            className={cn(
+                              "transition-all duration-300 mr-1 hover:scale-110 cursor-help",
+                              isHovered ? "opacity-100" : "opacity-80",
+                              todo.completed ? "opacity-100" : ""
+                            )}
+                            glowEffect={isHovered || completionPercentage > 75}
+                            animated={true}
+                          />
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom" className="text-xs font-medium">
+                        {hasSubtasks ? (
+                          <>
+                            <div className="font-semibold">Task Progress</div>
+                            <div className="mt-1">{completedSubtasks} of {todo.subtasks.length} subtasks completed</div>
+                            <div className="mt-0.5">{completionPercentage}% complete</div>
+                          </>
+                        ) : (
+                          <>
+                            <div className="font-semibold">Task Status</div>
+                            <div className="mt-1">{todo.completed ? "Completed" : "Pending"}</div>
+                          </>
+                        )}
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                )}
+                
                 <div
                   className={cn(
                     "priority-dot",

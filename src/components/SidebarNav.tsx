@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Home, PlusCircle, Users, UserCircle } from "lucide-react";
@@ -18,6 +18,23 @@ type NavItem = {
 
 export function SidebarNav() {
   const [activeItem, setActiveItem] = useState<string>("home");
+  const location = useLocation();
+
+  // Map path to item name
+  const pathToItemMap: Record<string, string> = {
+    "/": "home",
+    "/create": "create",
+    "/connections": "connections",
+    "/profile": "profile",
+  };
+
+  // Update active item when location changes
+  useEffect(() => {
+    const currentPath = location.pathname;
+    if (pathToItemMap[currentPath]) {
+      setActiveItem(pathToItemMap[currentPath]);
+    }
+  }, [location.pathname]);
 
   const navItems: NavItem[] = [
     {

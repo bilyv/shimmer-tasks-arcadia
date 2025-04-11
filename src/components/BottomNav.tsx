@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { Home, PlusCircle, Users, UserCircle } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
 type TabItem = {
   icon: JSX.Element;
@@ -11,6 +11,23 @@ type TabItem = {
 
 export function BottomNav() {
   const [activeTab, setActiveTab] = useState<string>("home");
+  const location = useLocation();
+
+  // Map path to tab name
+  const pathToTabMap: Record<string, string> = {
+    "/": "home",
+    "/create": "create",
+    "/connections": "connections",
+    "/profile": "profile",
+  };
+
+  // Update active tab when location changes
+  useEffect(() => {
+    const currentPath = location.pathname;
+    if (pathToTabMap[currentPath]) {
+      setActiveTab(pathToTabMap[currentPath]);
+    }
+  }, [location.pathname]);
 
   const tabs: TabItem[] = [
     {

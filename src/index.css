@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -43,6 +42,10 @@
     --sidebar-accent-foreground: 260 25% 25%;
     --sidebar-border: 260 25% 90%;
     --sidebar-ring: 260 55% 75%;
+
+    /* Progress Circle Gradients */
+    --primary-start: #4f46e5;
+    --primary-end: #8b5cf6;
   }
 
   .dark {
@@ -82,6 +85,10 @@
     --sidebar-accent-foreground: 260 25% 90%;
     --sidebar-border: 260 25% 25%;
     --sidebar-ring: 260 55% 65%;
+
+    /* Progress Circle Gradients */
+    --primary-start: #6366f1;
+    --primary-end: #a855f7;
   }
 }
 
