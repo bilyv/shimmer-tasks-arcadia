@@ -10,7 +10,7 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
 import Create from "./pages/Create";
 import Connections from "./pages/Connections";
-import Profile from "./pages/Profile";
+import Schedule from "./pages/Schedule";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
@@ -45,9 +45,9 @@ const App = () => (
                     <Connections />
                   </ProtectedRoute>
                 } />
-                <Route path="/profile" element={
+                <Route path="/schedule" element={
                   <ProtectedRoute>
-                    <Profile />
+                    <Schedule />
                   </ProtectedRoute>
                 } />
                 

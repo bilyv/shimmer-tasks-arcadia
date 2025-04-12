@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Home, PlusCircle, Users, UserCircle } from "lucide-react";
+import { Home, PlusCircle, Users, Calendar } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
@@ -25,7 +25,7 @@ export function SidebarNav() {
     "/": "home",
     "/create": "create",
     "/connections": "connections",
-    "/profile": "profile",
+    "/schedule": "schedule",
   };
 
   // Update active item when location changes
@@ -53,9 +53,9 @@ export function SidebarNav() {
       path: "/connections",
     },
     {
-      icon: <UserCircle className="h-5 w-5" />,
-      label: "Profile",
-      path: "/profile",
+      icon: <Calendar className="h-5 w-5" />,
+      label: "Schedule",
+      path: "/schedule",
     },
   ];
 
