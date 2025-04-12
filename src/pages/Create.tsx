@@ -96,7 +96,7 @@ const Create = () => {
 
   return (
     <Layout>
-      <div className="w-full max-w-3xl mx-auto px-4 py-8">
+      <div className="w-full max-w-3xl mx-auto px-4 py-8 pb-20 md:pb-8">
         <div className="flex items-center justify-center mb-8">
           <div className="bg-primary/10 p-3 rounded-full">
             <Sparkles className="h-6 w-6 text-primary" />

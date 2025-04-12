@@ -78,7 +78,7 @@ const Connections = () => {
 
   return (
     <Layout>
-      <div className="container mx-auto px-4 py-6 max-w-6xl">
+      <div className="container mx-auto px-4 py-6 pb-20 md:pb-6 max-w-6xl">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
           <div>
             <h1 className="text-2xl font-bold">Connections</h1>

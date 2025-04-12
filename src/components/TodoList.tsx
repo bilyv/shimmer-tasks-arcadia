@@ -91,7 +91,7 @@ export function TodoList() {
   
   return (
     <div className="min-h-screen pb-6">
-      <div className="container mx-auto px-4 py-2 max-w-4xl">
+      <div className="container mx-auto px-4 py-2 pb-20 md:pb-6 max-w-4xl">
         <header className="flex flex-col md:flex-row justify-between items-start md:items-center mb-5 gap-3">
           <div>
             <GreetingHeader />
