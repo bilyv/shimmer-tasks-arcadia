@@ -49,7 +49,10 @@ export function Navbar() {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="relative h-7 w-7 md:h-8 md:w-8 rounded-full p-0">
-                <Avatar className="h-7 w-7 md:h-8 md:w-8">
+                <Avatar 
+                  className="h-7 w-7 md:h-8 md:w-8 cursor-pointer"
+                  onClick={() => navigate("/profile")}
+                >
                   <AvatarImage src={user?.avatar} alt={user?.username} />
                   <AvatarFallback>
                     <UserCircle className="h-5 w-5 md:h-6 md:w-6" />
@@ -67,6 +70,13 @@ export function Navbar() {
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
+              <DropdownMenuItem 
+                className="text-xs md:text-sm py-1.5"
+                onClick={() => navigate("/profile")}
+              >
+                <UserCircle className="mr-2 h-3.5 w-3.5" />
+                <span>Your Profile</span>
+              </DropdownMenuItem>
               <DropdownMenuItem className="text-xs md:text-sm py-1.5">
                 <Users className="mr-2 h-3.5 w-3.5" />
                 <span>Invite Friends</span>

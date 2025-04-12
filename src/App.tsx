@@ -11,6 +11,7 @@ import Index from "./pages/Index";
 import Create from "./pages/Create";
 import Connections from "./pages/Connections";
 import Schedule from "./pages/Schedule";
+import Profile from "./pages/Profile";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
@@ -48,6 +49,11 @@ const App = () => (
                 <Route path="/schedule" element={
                   <ProtectedRoute>
                     <Schedule />
+                  </ProtectedRoute>
+                } />
+                <Route path="/profile" element={
+                  <ProtectedRoute>
+                    <Profile />
                   </ProtectedRoute>
                 } />
                 
