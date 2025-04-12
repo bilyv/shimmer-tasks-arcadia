@@ -41,9 +41,19 @@ import { mockConnections } from "@/data/mockData";
 import { useState, useEffect } from "react";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
+import { Todo } from "@/types/todo";
+
+// Interface for the StatCard component
+interface StatCardProps {
+  icon: React.ReactNode;
+  title: string;
+  value: number | string;
+  description?: string;
+  color?: string;
+}
 
 // Component to render the GitHub-style activity graph
-const ActivityGrid = ({ todos }) => {
+const ActivityGrid = ({ todos }: { todos: Todo[] }) => {
   const today = new Date();
   const oneYearAgo = subDays(today, 365);
   
@@ -155,7 +165,7 @@ const ActivityGrid = ({ todos }) => {
 };
 
 // Stat card component for reusability
-const StatCard = ({ icon, title, value, description, color = "text-primary" }) => (
+const StatCard = ({ icon, title, value, description, color = "text-primary" }: StatCardProps) => (
   <Card className="bg-card/60 backdrop-blur-sm">
     <CardContent className="p-6">
       <div className="flex items-start justify-between">
@@ -267,12 +277,14 @@ const Profile = () => {
             title="Tasks Completed"
             value={stats.completed}
             color="text-emerald-500"
+            description="Total tasks marked as done"
           />
           <StatCard 
             icon={<Activity className="h-5 w-5 text-blue-500" />}
             title="Completion Rate"
             value={`${stats.completionRate}%`}
             color="text-blue-500"
+            description="Percentage of tasks completed"
           />
           <StatCard 
             icon={<Clock className="h-5 w-5 text-amber-500" />}
@@ -286,6 +298,7 @@ const Profile = () => {
             title="Connections"
             value={stats.connections}
             color="text-violet-500"
+            description="People you're connected with"
           />
         </div>
         
