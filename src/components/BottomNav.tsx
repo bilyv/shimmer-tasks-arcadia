@@ -41,14 +41,14 @@ export function BottomNav() {
       path: "/create",
     },
     {
-      icon: <Users className="h-5 w-5" />,
-      label: "Connections",
-      path: "/connections",
-    },
-    {
       icon: <Calendar className="h-5 w-5" />,
       label: "Schedule",
       path: "/schedule",
+    },
+    {
+      icon: <Users className="h-5 w-5" />,
+      label: "Connections",
+      path: "/connections",
     },
   ];
 
