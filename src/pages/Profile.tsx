@@ -22,18 +22,13 @@ import {
   AvatarImage 
 } from "@/components/ui/avatar";
 import { 
-  CalendarDays,
   UserCircle,
   Mail,
   Edit,
   Users,
-  CheckCircle2,
   LineChart,
-  Activity,
   Trophy,
   Clock,
-  Github,
-  Calendar 
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { format, subDays, eachDayOfInterval, isSameDay } from "date-fns";
@@ -51,118 +46,6 @@ interface StatCardProps {
   description?: string;
   color?: string;
 }
-
-// Component to render the GitHub-style activity graph
-const ActivityGrid = ({ todos }: { todos: Todo[] }) => {
-  const today = new Date();
-  const oneYearAgo = subDays(today, 365);
-  
-  const days = eachDayOfInterval({ start: oneYearAgo, end: today });
-  
-  // Group todos by date for easy lookup
-  const todosByDate = {};
-  todos.forEach(todo => {
-    if (todo.createdAt) {
-      const dateStr = format(new Date(todo.createdAt), 'yyyy-MM-dd');
-      if (!todosByDate[dateStr]) {
-        todosByDate[dateStr] = [];
-      }
-      todosByDate[dateStr].push(todo);
-    }
-  });
-  
-  // Calculate activity level (0-4) for a given date
-  const getActivityLevel = (date) => {
-    const dateStr = format(date, 'yyyy-MM-dd');
-    const count = todosByDate[dateStr]?.length || 0;
-    
-    if (count === 0) return 0;
-    if (count === 1) return 1;
-    if (count <= 3) return 2;
-    if (count <= 6) return 3;
-    return 4;
-  };
-  
-  // Group days by week for display
-  const weeks = [];
-  let currentWeek = [];
-  
-  days.forEach((day, i) => {
-    const dayOfWeek = day.getDay();
-    
-    if (dayOfWeek === 0 && currentWeek.length > 0) {
-      weeks.push(currentWeek);
-      currentWeek = [];
-    }
-    
-    currentWeek.push(day);
-    
-    if (i === days.length - 1) {
-      weeks.push(currentWeek);
-    }
-  });
-  
-  // Fill the first week with empty cells if needed
-  if (weeks[0].length < 7) {
-    const firstWeek = weeks[0];
-    const missing = 7 - firstWeek.length;
-    for (let i = 0; i < missing; i++) {
-      firstWeek.unshift(null);
-    }
-  }
-  
-  return (
-    <div className="overflow-x-auto py-4">
-      <div className="min-w-[800px]">
-        <div className="flex text-xs text-muted-foreground mb-2 justify-start pl-10">
-          {["", "Mon", "", "Wed", "", "Fri", ""].map((day, i) => (
-            <div key={i} className="w-6 text-center">{day}</div>
-          ))}
-        </div>
-        <div className="flex flex-col gap-[3px]">
-          {weeks.map((week, weekIndex) => (
-            <div key={weekIndex} className="flex gap-[3px]">
-              {week.map((day, dayIndex) => {
-                if (!day) return <div key={`empty-${dayIndex}`} className="w-6 h-6" />;
-                
-                const level = getActivityLevel(day);
-                const dateStr = format(day, 'MMM d, yyyy');
-                const count = todosByDate[format(day, 'yyyy-MM-dd')]?.length || 0;
-                
-                return (
-                  <div
-                    key={dayIndex}
-                    className={`w-6 h-6 rounded-sm cursor-pointer transition-colors
-                      ${level === 0 ? 'bg-muted hover:bg-muted/80' : ''}
-                      ${level === 1 ? 'bg-emerald-200 dark:bg-emerald-900 hover:bg-emerald-300 dark:hover:bg-emerald-800' : ''}
-                      ${level === 2 ? 'bg-emerald-300 dark:bg-emerald-800 hover:bg-emerald-400 dark:hover:bg-emerald-700' : ''}
-                      ${level === 3 ? 'bg-emerald-400 dark:bg-emerald-700 hover:bg-emerald-500 dark:hover:bg-emerald-600' : ''}
-                      ${level === 4 ? 'bg-emerald-500 dark:bg-emerald-600 hover:bg-emerald-600 dark:hover:bg-emerald-500' : ''}
-                    `}
-                    title={`${dateStr}: ${count} ${count === 1 ? 'task' : 'tasks'}`}
-                  />
-                );
-              })}
-            </div>
-          ))}
-        </div>
-        <div className="flex items-center justify-start mt-3 gap-2 text-xs">
-          <div className="flex items-center">
-            <span className="mr-2 text-muted-foreground">Less</span>
-            <div className="flex gap-[3px]">
-              <div className="w-6 h-6 rounded-sm bg-muted" />
-              <div className="w-6 h-6 rounded-sm bg-emerald-200 dark:bg-emerald-900" />
-              <div className="w-6 h-6 rounded-sm bg-emerald-300 dark:bg-emerald-800" />
-              <div className="w-6 h-6 rounded-sm bg-emerald-400 dark:bg-emerald-700" />
-              <div className="w-6 h-6 rounded-sm bg-emerald-500 dark:bg-emerald-600" />
-            </div>
-            <span className="ml-2 text-muted-foreground">More</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
 
 // Stat card component for reusability
 const StatCard = ({ icon, title, value, description, color = "text-primary" }: StatCardProps) => (
@@ -271,21 +154,7 @@ const Profile = () => {
         </div>
         
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <StatCard 
-            icon={<CheckCircle2 className="h-5 w-5 text-emerald-500" />}
-            title="Tasks Completed"
-            value={stats.completed}
-            color="text-emerald-500"
-            description="Total tasks marked as done"
-          />
-          <StatCard 
-            icon={<Activity className="h-5 w-5 text-blue-500" />}
-            title="Completion Rate"
-            value={`${stats.completionRate}%`}
-            color="text-blue-500"
-            description="Percentage of tasks completed"
-          />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
           <StatCard 
             icon={<Clock className="h-5 w-5 text-amber-500" />}
             title="Current Streak"
@@ -303,33 +172,13 @@ const Profile = () => {
         </div>
         
         {/* Main Content */}
-        <Tabs defaultValue="activity" className="bg-background/50 p-4 rounded-xl backdrop-blur-md border shadow-sm mb-8">
+        <Tabs defaultValue="progress" className="bg-background/50 p-4 rounded-xl backdrop-blur-md border shadow-sm mb-8">
           <TabsList className="mb-4 bg-background border">
-            <TabsTrigger value="activity" className="flex items-center gap-2">
-              <Github className="h-4 w-4" />
-              <span>Activity</span>
-            </TabsTrigger>
             <TabsTrigger value="progress" className="flex items-center gap-2">
               <LineChart className="h-4 w-4" />
               <span>Progress</span>
             </TabsTrigger>
-            <TabsTrigger value="calendar" className="flex items-center gap-2">
-              <Calendar className="h-4 w-4" />
-              <span>Calendar</span>
-            </TabsTrigger>
           </TabsList>
-          
-          <TabsContent value="activity">
-            <Card className="bg-card/60 backdrop-blur-sm border">
-              <CardHeader>
-                <CardTitle className="text-lg">Activity Contributions</CardTitle>
-                <CardDescription>Your task creation and completion activity over the past year.</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ActivityGrid todos={todos} />
-              </CardContent>
-            </Card>
-          </TabsContent>
           
           <TabsContent value="progress">
             <Card className="bg-card/60 backdrop-blur-sm border">
@@ -363,24 +212,6 @@ const Profile = () => {
                       </div>
                     );
                   })}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-          
-          <TabsContent value="calendar">
-            <Card className="bg-card/60 backdrop-blur-sm border">
-              <CardHeader>
-                <CardTitle className="text-lg">Task Calendar View</CardTitle>
-                <CardDescription>Your upcoming and completed tasks by date.</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex flex-col items-center justify-center py-8">
-                  <CalendarDays className="h-16 w-16 text-muted-foreground/50 mb-4" />
-                  <p className="text-muted-foreground text-center">
-                    Calendar view is coming soon!<br />
-                    Check back for updates.
-                  </p>
                 </div>
               </CardContent>
             </Card>
