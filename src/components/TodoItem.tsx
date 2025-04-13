@@ -339,6 +339,7 @@ export function TodoItem({ todo, categoryColor }: TodoItemProps) {
                 <ConnectionsSelector 
                   onSelectConnections={handleSelectConnections}
                   onClose={() => setShowConnectionsSelector(false)}
+                  todo={todo}
                 />
               </div>
             )}

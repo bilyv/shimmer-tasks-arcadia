@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from "react";
-import { Connection } from "@/types/todo";
+import { Connection, Todo } from "@/types/todo";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, X, CheckCircle2, User } from "lucide-react";
+import { Search, X, CheckCircle2, User, Calendar, Info } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { format } from "date-fns";
 
 interface ConnectionsSelectorProps {
   onSelectConnections: (connections: Connection[]) => void;
   onClose: () => void;
+  todo: Todo; // Add todo prop to show task information
 }
 
 // Mock connections data - in a real app, this would come from an API or context
@@ -21,7 +23,7 @@ const MOCK_CONNECTIONS: Connection[] = [
   { id: "c6", name: "Jordan Davis", email: "jordan@example.com", avatar: "https://i.pravatar.cc/150?u=jordan" },
 ];
 
-export function ConnectionsSelector({ onSelectConnections, onClose }: ConnectionsSelectorProps) {
+export function ConnectionsSelector({ onSelectConnections, onClose, todo }: ConnectionsSelectorProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [connections, setConnections] = useState<Connection[]>(MOCK_CONNECTIONS);
   const [selectedConnectionIds, setSelectedConnectionIds] = useState<Set<string>>(new Set());
@@ -69,8 +71,29 @@ export function ConnectionsSelector({ onSelectConnections, onClose }: Connection
           className="pl-9 py-1 h-8 text-sm"
         />
       </div>
+      
+      {/* Task summary card */}
+      <div className="rounded-md bg-muted/50 p-2 text-xs">
+        <div className="flex items-start">
+          <Info className="h-3.5 w-3.5 text-muted-foreground mr-2 mt-0.5 flex-shrink-0" />
+          <div>
+            <h4 className="font-medium mb-1">You'll share:</h4>
+            <div className="space-y-1 text-muted-foreground">
+              <div className="flex items-center gap-1 truncate">
+                <span className="font-medium">Task:</span> {todo.title}
+              </div>
+              {todo.dueDate && (
+                <div className="flex items-center gap-1">
+                  <Calendar className="h-3 w-3" />
+                  <span>{format(new Date(todo.dueDate), "MMM d, yyyy")}</span>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
 
-      <div className="max-h-52 overflow-y-auto pr-1">
+      <div className="max-h-40 overflow-y-auto pr-1">
         {filteredConnections.length > 0 ? (
           <ul className="space-y-1">
             {filteredConnections.map((connection) => {
