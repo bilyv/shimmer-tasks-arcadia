@@ -3,7 +3,7 @@ import { Todo, Priority } from "@/types/todo";
 import { useTodo } from "@/contexts/TodoContext";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
-import { Check, Trash2, Edit, Calendar, AlertCircle, ChevronDown, ChevronUp, Share2 } from "lucide-react";
+import { Check, Trash2, Edit, Calendar, AlertCircle, ChevronDown, ChevronUp, Share2, Users, UserPlus, X } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   DropdownMenu,
@@ -38,6 +38,7 @@ export function TodoItem({ todo, categoryColor }: TodoItemProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [showCelebration, setShowCelebration] = useState(false);
   const [previousCompletionState, setPreviousCompletionState] = useState(todo.completed);
+  const [showSharePopup, setShowSharePopup] = useState(false);
 
   // Track the previous completion state to detect changes
   useEffect(() => {
@@ -56,12 +57,30 @@ export function TodoItem({ todo, categoryColor }: TodoItemProps) {
     deleteTodo(todo.id);
   };
 
-  const handleShare = () => {
+  const handleOpenSharePopup = () => {
+    setShowSharePopup(true);
+  };
+
+  const handleCloseSharePopup = () => {
+    setShowSharePopup(false);
+  };
+
+  const handleShareWithConnections = () => {
     navigator.clipboard.writeText(`Task: ${todo.title} - Due: ${todo.dueDate ? format(new Date(todo.dueDate), "MMM d, yyyy") : "No due date"}`);
-    toast.success("Task details copied to clipboard", {
-      description: "You can now share it with others",
+    toast.success("Task shared with connections", {
+      description: "Task details copied for sharing with your connections",
       duration: 3000,
     });
+    setShowSharePopup(false);
+  };
+
+  const handleShareWithTeam = () => {
+    navigator.clipboard.writeText(`Task: ${todo.title} - Due: ${todo.dueDate ? format(new Date(todo.dueDate), "MMM d, yyyy") : "No due date"} - Priority: ${todo.priority}`);
+    toast.success("Task shared with team", {
+      description: "Task details copied for sharing with your team",
+      duration: 3000,
+    });
+    setShowSharePopup(false);
   };
 
   const getPriorityColor = (priority: Priority) => {
@@ -203,7 +222,7 @@ export function TodoItem({ todo, categoryColor }: TodoItemProps) {
                       <Edit className="mr-2 h-4 w-4" />
                       Edit
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={handleShare}>
+                    <DropdownMenuItem onClick={handleOpenSharePopup}>
                       <Share2 className="mr-2 h-4 w-4" />
                       Share
                     </DropdownMenuItem>
@@ -267,10 +286,48 @@ export function TodoItem({ todo, categoryColor }: TodoItemProps) {
         </div>
       </div>
       
+      {/* Share Popup */}
+      {showSharePopup && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/40" onClick={handleCloseSharePopup}></div>
+          <div className="relative bg-card rounded-xl shadow-lg w-64 py-4 animate-scale-in-out">
+            <div className="px-4 pb-2 flex justify-between items-center border-b">
+              <h3 className="font-semibold text-base">Share Task</h3>
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="h-7 w-7"
+                onClick={handleCloseSharePopup}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+            <div className="p-4 space-y-3">
+              <Button 
+                variant="outline"
+                className="w-full justify-start gap-2"
+                onClick={handleShareWithConnections}
+              >
+                <UserPlus className="h-4 w-4 text-arc-blue" />
+                <span>Share with connections</span>
+              </Button>
+              <Button 
+                variant="outline"
+                className="w-full justify-start gap-2"
+                onClick={handleShareWithTeam}
+              >
+                <Users className="h-4 w-4 text-arc-purple" />
+                <span>Share with team</span>
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+      
       {showEditDialog && (
         <TodoDialog 
-          isOpen={showEditDialog} 
-          setIsOpen={setShowEditDialog}
+          open={showEditDialog} 
+          onOpenChange={setShowEditDialog}
           todo={todo}
           mode="edit"
         />
