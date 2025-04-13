@@ -126,36 +126,36 @@ const Schedule = () => {
               <Calendar
                 mode="single"
                 selected={selectedDate}
-                  onSelect={handleDateSelect}
-                  className="rounded-md w-full"
-                  classNames={{
-                    month: "space-y-3",
-                    table: "w-full border-collapse",
-                    head_row: "flex",
-                    head_cell: "text-muted-foreground rounded-md w-full font-normal text-xs px-1",
-                    row: "flex w-full mt-1",
-                    cell: "text-center h-8 w-8 md:h-10 md:w-10 text-xs p-0 relative focus-within:relative focus-within:z-20 [&:has([aria-selected])]:bg-accent first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md",
-                    day: "h-8 w-8 md:h-10 md:w-10 p-0 font-normal aria-selected:opacity-100",
-                    day_selected: "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
-                    day_disabled: "text-muted-foreground opacity-50",
-                    day_today: "bg-accent text-accent-foreground",
-                    day_outside: "text-muted-foreground opacity-50",
-                    day_range_middle: "aria-selected:bg-accent aria-selected:text-accent-foreground",
-                    day_hidden: "invisible",
-                    nav: "space-x-1 flex items-center",
-                    nav_button: "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100",
-                    nav_button_previous: "absolute left-1",
-                    nav_button_next: "absolute right-1",
-                    caption: "flex justify-center py-1 mb-2 relative items-center text-sm font-medium",
-                    caption_label: "text-sm font-medium",
-                    caption_dropdowns: "flex justify-center gap-1"
-                  }}
+                onSelect={handleDateSelect}
+                className="rounded-md w-full"
+                classNames={{
+                  month: "space-y-3",
+                  table: "w-full border-collapse space-y-1",
+                  head_row: "grid grid-cols-7",
+                  head_cell: "text-muted-foreground font-normal text-xs text-center",
+                  row: "grid grid-cols-7 mt-2",
+                  cell: "h-9 w-9 text-center text-sm p-0 relative [&:has([aria-selected])]:bg-accent first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20 mx-auto",
+                  day: "h-9 w-9 p-0 font-normal aria-selected:opacity-100 hover:bg-accent hover:rounded-md",
+                  day_selected: "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground rounded-md",
+                  day_disabled: "text-muted-foreground opacity-50",
+                  day_today: "bg-accent text-accent-foreground rounded-md",
+                  day_outside: "text-muted-foreground opacity-50",
+                  day_range_middle: "aria-selected:bg-accent aria-selected:text-accent-foreground",
+                  day_hidden: "invisible",
+                  nav: "space-x-1 flex items-center",
+                  nav_button: "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100",
+                  nav_button_previous: "absolute left-1",
+                  nav_button_next: "absolute right-1",
+                  caption: "flex justify-center py-1 mb-2 relative items-center text-sm font-medium",
+                  caption_label: "text-sm font-medium",
+                  caption_dropdowns: "flex justify-center gap-1"
+                }}
                 components={{
                   DayContent: ({ date }) => renderDayContent(date)
                 }}
-                  disabled={(date) => isBefore(date, today)}
-                  fromDate={today}
-                  initialFocus
+                disabled={(date) => isBefore(date, today)}
+                fromDate={today}
+                initialFocus
                 />
                 </div>
             </CardContent>
