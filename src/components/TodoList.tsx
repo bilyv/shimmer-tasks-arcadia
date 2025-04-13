@@ -2,17 +2,14 @@ import { useState, useEffect } from "react";
 import { useTodo } from "@/contexts/TodoContext";
 import { TodoItem } from "./TodoItem";
 import { EmptyState } from "./EmptyState";
-import { CategorySelect } from "./CategorySelect";
 import { SearchAndFilters } from "./SearchAndFilters";
 import { StatsDisplay } from "./StatsDisplay";
 import { TodoDialog } from "./TodoDialog";
 import { GreetingHeader } from "./GreetingHeader";
 import { Button } from "@/components/ui/button";
-import { CheckSquare, Calendar } from "lucide-react";
+import { CheckSquare } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Todo } from "@/types/todo";
-import { TaskCalendarView } from "./TaskCalendarView";
-import { format } from "date-fns";
 import { groupTodosByDate, DateGroup } from "@/utils/dateUtils";
 import { useNavigate } from "react-router-dom";
 import {
@@ -25,6 +22,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { format } from "date-fns";
 
 export function TodoList() {
   const { todos, categories, filterTodos, clearCompletedTodos } = useTodo();
@@ -33,7 +31,6 @@ export function TodoList() {
   const [showCompleted, setShowCompleted] = useState(true);
   const [showClearDialog, setShowClearDialog] = useState(false);
   const [sortOrder, setSortOrder] = useState<"newest" | "oldest" | "priority">("newest");
-  const [showCalendar, setShowCalendar] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const isMobile = useIsMobile();
   const navigate = useNavigate();
@@ -75,14 +72,6 @@ export function TodoList() {
     setShowClearDialog(true);
   };
   
-  const handleCalendarToggle = () => {
-    setShowCalendar(!showCalendar);
-  };
-  
-  const handleDateSelect = (date: Date | undefined) => {
-    setSelectedDate(date);
-  };
-  
   const navigateToCreate = () => {
     navigate('/create');
   };
@@ -121,13 +110,6 @@ export function TodoList() {
         
         <StatsDisplay />
         
-        <div className="mt-6 mb-5">
-          <CategorySelect
-            selectedCategory={selectedCategory}
-            onCategoryChange={setSelectedCategory}
-          />
-        </div>
-        
         <div className="mb-5">
           <SearchAndFilters
             searchQuery={searchQuery}
@@ -136,17 +118,10 @@ export function TodoList() {
             onShowCompletedChange={setShowCompleted}
             sortOrder={sortOrder}
             onSortOrderChange={setSortOrder}
-            onCalendarToggle={handleCalendarToggle}
-            isCalendarVisible={showCalendar}
+            selectedCategory={selectedCategory}
+            onCategoryChange={setSelectedCategory}
           />
         </div>
-        
-        {showCalendar && (
-          <TaskCalendarView 
-            onSelectDate={handleDateSelect}
-            selectedDate={selectedDate}
-          />
-        )}
         
         <div className="space-y-4">
           {filteredTodos.length > 0 ? (

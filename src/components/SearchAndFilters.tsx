@@ -1,7 +1,6 @@
-
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, Filter, Calendar } from "lucide-react";
+import { Search, Filter } from "lucide-react";
 import { 
   DropdownMenu,
   DropdownMenuTrigger,
@@ -9,6 +8,7 @@ import {
   DropdownMenuCheckboxItem
 } from "@/components/ui/dropdown-menu";
 import { useState } from "react";
+import { CategorySelect } from "./CategorySelect";
 
 interface SearchAndFiltersProps {
   searchQuery: string;
@@ -17,8 +17,8 @@ interface SearchAndFiltersProps {
   onShowCompletedChange: (show: boolean) => void;
   sortOrder: "newest" | "oldest" | "priority";
   onSortOrderChange: (order: "newest" | "oldest" | "priority") => void;
-  onCalendarToggle: () => void;
-  isCalendarVisible: boolean;
+  selectedCategory: string | null;
+  onCategoryChange: (categoryId: string | null) => void;
 }
 
 export function SearchAndFilters({
@@ -28,8 +28,8 @@ export function SearchAndFilters({
   onShowCompletedChange,
   sortOrder,
   onSortOrderChange,
-  onCalendarToggle,
-  isCalendarVisible
+  selectedCategory,
+  onCategoryChange
 }: SearchAndFiltersProps) {
   const [isFocused, setIsFocused] = useState(false);
   
@@ -47,14 +47,13 @@ export function SearchAndFilters({
         />
       </div>
       
-      <Button 
-        variant={isCalendarVisible ? "default" : "outline"} 
-        size="icon" 
-        className="rounded-lg"
-        onClick={onCalendarToggle}
-      >
-        <Calendar className="h-4 w-4" />
-      </Button>
+      <div className="w-auto">
+        <CategorySelect 
+          selectedCategory={selectedCategory} 
+          onCategoryChange={onCategoryChange} 
+          isCompact={true}
+        />
+      </div>
       
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
