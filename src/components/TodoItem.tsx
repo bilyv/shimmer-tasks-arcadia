@@ -25,6 +25,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { CelebrationEffect } from "./CelebrationEffect";
+import { ConnectionSearchDialog } from "./ConnectionSearchDialog";
 
 interface TodoItemProps {
   todo: Todo;
@@ -39,6 +40,7 @@ export function TodoItem({ todo, categoryColor }: TodoItemProps) {
   const [showCelebration, setShowCelebration] = useState(false);
   const [previousCompletionState, setPreviousCompletionState] = useState(todo.completed);
   const [showSharePopup, setShowSharePopup] = useState(false);
+  const [showConnectionSearch, setShowConnectionSearch] = useState(false);
 
   // Track the previous completion state to detect changes
   useEffect(() => {
@@ -65,13 +67,26 @@ export function TodoItem({ todo, categoryColor }: TodoItemProps) {
     setShowSharePopup(false);
   };
 
-  const handleShareWithConnections = () => {
-    navigator.clipboard.writeText(`Task: ${todo.title} - Due: ${todo.dueDate ? format(new Date(todo.dueDate), "MMM d, yyyy") : "No due date"}`);
-    toast.success("Task shared with connections", {
-      description: "Task details copied for sharing with your connections",
+  const handleOpenConnectionSearch = () => {
+    setShowSharePopup(false);
+    setShowConnectionSearch(true);
+  };
+
+  const handleCloseConnectionSearch = () => {
+    setShowConnectionSearch(false);
+  };
+
+  const handleShareWithConnections = (connectionIds: string[]) => {
+    if (connectionIds.length === 0) return;
+    
+    // In a real app, this would call an API to share the task
+    const connectionCount = connectionIds.length;
+    toast.success(`Task shared with ${connectionCount} connection${connectionCount > 1 ? 's' : ''}`, {
+      description: "Your task has been shared successfully",
       duration: 3000,
     });
-    setShowSharePopup(false);
+    
+    setShowConnectionSearch(false);
   };
 
   const handleShareWithTeam = () => {
@@ -306,7 +321,7 @@ export function TodoItem({ todo, categoryColor }: TodoItemProps) {
               <Button 
                 variant="outline"
                 className="w-full justify-start gap-2"
-                onClick={handleShareWithConnections}
+                onClick={handleOpenConnectionSearch}
               >
                 <UserPlus className="h-4 w-4 text-arc-blue" />
                 <span>Share with connections</span>
@@ -322,6 +337,17 @@ export function TodoItem({ todo, categoryColor }: TodoItemProps) {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Connection Search Dialog */}
+      {showConnectionSearch && (
+        <ConnectionSearchDialog 
+          taskTitle={todo.title}
+          taskDueDate={todo.dueDate}
+          taskPriority={todo.priority}
+          onClose={handleCloseConnectionSearch}
+          onShare={handleShareWithConnections}
+        />
       )}
       
       {showEditDialog && (
