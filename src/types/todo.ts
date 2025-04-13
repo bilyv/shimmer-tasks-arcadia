@@ -15,6 +15,12 @@ export interface Connection {
   email: string;
 }
 
+export interface TodoLink {
+  id: string;
+  url: string;
+  title: string;
+}
+
 export interface Todo {
   id: string;
   title: string;
@@ -26,6 +32,7 @@ export interface Todo {
   categoryId: string;
   dueDate: Date | null;
   subtasks: SubTask[];
+  links?: TodoLink[];
 }
 
 export interface Category {

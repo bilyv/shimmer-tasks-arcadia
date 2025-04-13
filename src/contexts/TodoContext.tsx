@@ -1,6 +1,5 @@
-
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { Todo, SubTask, Category, Priority, DEFAULT_CATEGORIES } from "@/types/todo";
+import { Todo, SubTask, Category, Priority, DEFAULT_CATEGORIES, TodoLink } from "@/types/todo";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 
@@ -77,6 +76,7 @@ export const TodoProvider: React.FC<{ children: React.ReactNode }> = ({ children
       createdAt: now,
       updatedAt: now,
       subtasks: [],
+      links: todo.links || [],
     };
 
     setTodos((prevTodos) => [...prevTodos, newTodo]);
@@ -92,9 +92,20 @@ export const TodoProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Update an existing todo
   const updateTodo = (id: string, updates: Partial<Todo>) => {
     setTodos((prevTodos) => 
-      prevTodos.map((todo) => 
-        todo.id === id ? { ...todo, ...updates, updatedAt: new Date() } : todo
-      )
+      prevTodos.map((todo) => {
+        if (todo.id === id) {
+          // Make sure to handle links property properly
+          const updatedTodo = { 
+            ...todo, 
+            ...updates, 
+            updatedAt: new Date(),
+            // Preserve existing links if not provided in updates
+            links: updates.links !== undefined ? updates.links : todo.links,
+          };
+          return updatedTodo;
+        }
+        return todo;
+      })
     );
     
     toast({

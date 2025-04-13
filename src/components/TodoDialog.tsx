@@ -6,13 +6,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Calendar as CalendarIcon, X, Plus } from "lucide-react";
+import { Calendar as CalendarIcon, X, Plus, Link as LinkIcon, Check } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { format, isBefore, startOfDay } from "date-fns";
 import { cn } from "@/lib/utils";
 import { useTodo } from "@/contexts/TodoContext";
-import { Todo, Priority, SubTask } from "@/types/todo";
+import { Todo, Priority, SubTask, TodoLink } from "@/types/todo";
 import { Badge } from "@/components/ui/badge";
 
 interface TodoDialogProps {
@@ -32,6 +32,12 @@ export function TodoDialog({ mode, todo, open, onOpenChange }: TodoDialogProps) 
   const [dueDate, setDueDate] = useState<Date | null>(todo?.dueDate || null);
   const [subtasks, setSubtasks] = useState<SubTask[]>(todo?.subtasks || []);
   const [newSubtaskTitle, setNewSubtaskTitle] = useState("");
+  
+  // New state for links
+  const [links, setLinks] = useState<TodoLink[]>(todo?.links || []);
+  const [newLinkUrl, setNewLinkUrl] = useState("");
+  const [newLinkTitle, setNewLinkTitle] = useState("");
+  const [showLinkInput, setShowLinkInput] = useState(false);
   
   const today = startOfDay(new Date());
   
@@ -60,6 +66,40 @@ export function TodoDialog({ mode, todo, open, onOpenChange }: TodoDialogProps) 
     }
   };
   
+  // New functions for links
+  const handleAddLink = () => {
+    if (newLinkUrl.trim()) {
+      // Basic URL validation
+      let url = newLinkUrl.trim();
+      if (!/^https?:\/\//i.test(url)) {
+        url = 'https://' + url;
+      }
+      
+      setLinks([
+        ...links,
+        {
+          id: crypto.randomUUID(),
+          url: url,
+          title: newLinkTitle.trim() || url,
+        },
+      ]);
+      setNewLinkUrl("");
+      setNewLinkTitle("");
+      setShowLinkInput(false);
+    }
+  };
+
+  const handleDeleteLink = (linkId: string) => {
+    setLinks(links.filter((link) => link.id !== linkId));
+  };
+
+  const handleLinkKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleAddLink();
+    }
+  };
+  
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -72,6 +112,7 @@ export function TodoDialog({ mode, todo, open, onOpenChange }: TodoDialogProps) 
         priority,
         categoryId,
         dueDate,
+        links: links.length > 0 ? links : undefined,
       };
       
       const newTodoId = addTodo(newTodo);
@@ -88,6 +129,7 @@ export function TodoDialog({ mode, todo, open, onOpenChange }: TodoDialogProps) 
         categoryId,
         dueDate,
         subtasks,
+        links: links.length > 0 ? links : undefined,
       });
     }
     
@@ -145,47 +187,142 @@ export function TodoDialog({ mode, todo, open, onOpenChange }: TodoDialogProps) 
           <div className="grid gap-1.5">
             <Label className="text-sm">Subtasks</Label>
             
-            {/* Horizontal subtask tags display */}
-            <div className="flex flex-wrap gap-2 mb-2">
+            {/* Subtasks display */}
+            <div className="flex flex-wrap gap-1.5 mb-1">
               {subtasks.map((subtask) => (
                 <Badge 
                   key={subtask.id} 
                   variant="secondary"
-                  className="px-2 py-1 flex items-center gap-1 text-xs"
+                  className="px-2 py-0.5 flex items-center gap-1 text-xs"
                 >
                   {subtask.title}
                   <Button
                     type="button"
                     variant="ghost"
                     size="icon"
-                    className="h-4 w-4 ml-1 p-0"
+                    className="h-3 w-3 ml-1 p-0"
                     onClick={() => handleDeleteSubtask(subtask.id)}
                   >
-                    <X className="h-3 w-3" />
+                    <X className="h-2 w-2" />
                   </Button>
                 </Badge>
               ))}
             </div>
             
-            {/* Horizontal subtask input */}
+            {/* Subtask input */}
             <div className="flex items-center gap-1.5">
               <Input
                 placeholder="Add a subtask..."
                 value={newSubtaskTitle}
                 onChange={(e) => setNewSubtaskTitle(e.target.value)}
                 onKeyDown={handleSubtaskKeyDown}
-                className="h-7 text-xs"
+                className="flex-1 h-7 text-sm"
               />
               <Button
                 type="button"
-                variant="ghost"
-                size="icon"
-                className="h-7 w-7 shrink-0"
+                variant="outline"
+                size="sm"
                 onClick={handleAddSubtask}
+                className="px-2 h-7 text-xs"
               >
-                <Plus className="h-3 w-3" />
+                <Plus className="h-3 w-3 mr-1" />
+                Add
               </Button>
             </div>
+          </div>
+          
+          {/* Links section */}
+          <div className="grid gap-1.5">
+            <Label className="text-sm">Links</Label>
+            
+            {/* Links display */}
+            <div className="flex flex-wrap gap-1.5 mb-1">
+              {links.map((link) => (
+                <Badge 
+                  key={link.id} 
+                  variant="secondary"
+                  className="px-2 py-0.5 flex items-center gap-1 text-xs"
+                >
+                  <a 
+                    href={link.url} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1 hover:underline"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <LinkIcon className="h-2.5 w-2.5 text-primary" />
+                    {link.title}
+                  </a>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="h-3 w-3 ml-1 p-0"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleDeleteLink(link.id);
+                    }}
+                  >
+                    <X className="h-2 w-2" />
+                  </Button>
+                </Badge>
+              ))}
+            </div>
+            
+            {/* Link input */}
+            {showLinkInput ? (
+              <div className="space-y-2">
+                <div className="flex items-center gap-1.5">
+                  <Input
+                    placeholder="URL (e.g., https://example.com)"
+                    value={newLinkUrl}
+                    onChange={(e) => setNewLinkUrl(e.target.value)}
+                    onKeyDown={handleLinkKeyDown}
+                    className="flex-1 h-7 text-sm"
+                    autoFocus
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowLinkInput(false)}
+                    className="px-2 h-7 text-xs"
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <Input
+                    placeholder="Link title (optional)"
+                    value={newLinkTitle}
+                    onChange={(e) => setNewLinkTitle(e.target.value)}
+                    onKeyDown={handleLinkKeyDown}
+                    className="flex-1 h-7 text-sm"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={handleAddLink}
+                    className="px-2 h-7 text-xs"
+                  >
+                    <Check className="h-3 w-3 mr-1" />
+                    Add
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setShowLinkInput(true)}
+                className="px-2 h-7 text-xs w-full"
+              >
+                <Plus className="h-3 w-3 mr-1" />
+                Add Link
+              </Button>
+            )}
           </div>
           
           <div className="grid gap-1.5">

@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Calendar as CalendarIcon, X, Plus, Check, Sparkles, Camera, Scan, ScanLine, Bot, BrainCircuit } from "lucide-react";
+import { Calendar as CalendarIcon, X, Plus, Check, Sparkles, Camera, Scan, ScanLine, Bot, BrainCircuit, RefreshCw, Link as LinkIcon } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { format, isBefore, startOfDay } from "date-fns";
@@ -18,6 +18,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { toast } from "@/components/ui/use-toast";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Switch } from "@/components/ui/switch";
 
 const Create = () => {
   const { addTodo, categories, addSubtask } = useTodo();
@@ -30,6 +31,12 @@ const Create = () => {
   const [subtasks, setSubtasks] = useState<SubTask[]>([]);
   const [newSubtaskTitle, setNewSubtaskTitle] = useState("");
   
+  // New state for links
+  const [links, setLinks] = useState<{id: string, url: string, title: string}[]>([]);
+  const [newLinkUrl, setNewLinkUrl] = useState("");
+  const [newLinkTitle, setNewLinkTitle] = useState("");
+  const [showLinkInput, setShowLinkInput] = useState(false);
+  
   // States for OCR and AI
   const [showOcrDialog, setShowOcrDialog] = useState(false);
   const [showAiDialog, setShowAiDialog] = useState(false);
@@ -37,6 +44,12 @@ const Create = () => {
   const [aiPrompt, setAiPrompt] = useState("");
   const [isProcessingOcr, setIsProcessingOcr] = useState(false);
   const [isGeneratingAi, setIsGeneratingAi] = useState(false);
+  
+  // States for repetition
+  const [repeatEnabled, setRepeatEnabled] = useState(false);
+  const [repeatFrequency, setRepeatFrequency] = useState<"daily" | "weekly" | "monthly" | "custom">("weekly");
+  const [repeatCustomValue, setRepeatCustomValue] = useState(1);
+  const [repeatCustomUnit, setRepeatCustomUnit] = useState<"days" | "weeks" | "months">("weeks");
   
   const today = startOfDay(new Date());
   
@@ -65,10 +78,54 @@ const Create = () => {
     }
   };
   
+  // New function to handle adding links
+  const handleAddLink = () => {
+    if (newLinkUrl.trim()) {
+      // Basic URL validation
+      let url = newLinkUrl.trim();
+      if (!/^https?:\/\//i.test(url)) {
+        url = 'https://' + url;
+      }
+      
+      setLinks([
+        ...links,
+        {
+          id: crypto.randomUUID(),
+          url: url,
+          title: newLinkTitle.trim() || url,
+        },
+      ]);
+      setNewLinkUrl("");
+      setNewLinkTitle("");
+      setShowLinkInput(false);
+    }
+  };
+
+  const handleDeleteLink = (linkId: string) => {
+    setLinks(links.filter((link) => link.id !== linkId));
+  };
+
+  const handleLinkKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleAddLink();
+    }
+  };
+  
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!title.trim()) return;
+    
+    // Validate due date is set when repetition is enabled
+    if (repeatEnabled && !dueDate) {
+      toast({
+        title: "Due date required",
+        description: "Please set a due date for recurring tasks.",
+        variant: "destructive",
+      });
+      return;
+    }
     
     const newTodo = {
       title,
@@ -76,6 +133,7 @@ const Create = () => {
       priority,
       categoryId,
       dueDate,
+      links: links.length > 0 ? links : undefined,
     };
     
     const newTodoId = addTodo(newTodo);
@@ -85,6 +143,31 @@ const Create = () => {
       addSubtask(newTodoId, subtask.title);
     });
     
+    // Handle repetition
+    if (repeatEnabled && dueDate) {
+      let repeatDescription = "";
+      
+      switch (repeatFrequency) {
+        case "daily":
+          repeatDescription = "daily";
+          break;
+        case "weekly":
+          repeatDescription = "weekly";
+          break;
+        case "monthly":
+          repeatDescription = "monthly";
+          break;
+        case "custom":
+          repeatDescription = `every ${repeatCustomValue} ${repeatCustomUnit}`;
+          break;
+      }
+      
+      toast({
+        title: "Recurring task created",
+        description: `This task will repeat ${repeatDescription}, starting on ${format(dueDate, "MMM d, yyyy")}`,
+      });
+    }
+    
     // Reset form
     setTitle("");
     setDescription("");
@@ -92,6 +175,11 @@ const Create = () => {
     setCategoryId(categories[0]?.id || "");
     setDueDate(null);
     setSubtasks([]);
+    setLinks([]);
+    setRepeatEnabled(false);
+    setRepeatFrequency("weekly");
+    setRepeatCustomValue(1);
+    setRepeatCustomUnit("weeks");
     
     toast({
       title: "Task created",
@@ -306,6 +394,97 @@ const Create = () => {
                 </div>
               </div>
               
+              {/* Links section */}
+              <div className="grid gap-1">
+                <Label className="text-sm font-medium">Links</Label>
+                
+                {/* Links display */}
+                <div className="flex flex-wrap gap-1 mb-1">
+                  {links.map((link) => (
+                    <Badge 
+                      key={link.id} 
+                      variant="secondary"
+                      className="px-2 py-0.5 flex items-center gap-1 text-xs"
+                    >
+                      <a 
+                        href={link.url} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-1 hover:underline"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <LinkIcon className="h-2.5 w-2.5 text-primary" />
+                        {link.title}
+                      </a>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="h-3 w-3 ml-1 p-0"
+                        onClick={() => handleDeleteLink(link.id)}
+                      >
+                        <X className="h-2 w-2" />
+                      </Button>
+                    </Badge>
+                  ))}
+                </div>
+                
+                {/* Link input */}
+                {showLinkInput ? (
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-1">
+                      <Input
+                        placeholder="URL (e.g., https://example.com)"
+                        value={newLinkUrl}
+                        onChange={(e) => setNewLinkUrl(e.target.value)}
+                        onKeyDown={handleLinkKeyDown}
+                        className="flex-1 h-7 text-sm"
+                        autoFocus
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setShowLinkInput(false)}
+                        className="px-2 h-7 text-xs"
+                      >
+                        <X className="h-3 w-3" />
+                      </Button>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Input
+                        placeholder="Link title (optional)"
+                        value={newLinkTitle}
+                        onChange={(e) => setNewLinkTitle(e.target.value)}
+                        onKeyDown={handleLinkKeyDown}
+                        className="flex-1 h-7 text-sm"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={handleAddLink}
+                        className="px-2 h-7 text-xs"
+                      >
+                        <Check className="h-3 w-3 mr-1" />
+                        Add
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowLinkInput(true)}
+                    className="px-2 h-7 text-xs w-full"
+                  >
+                    <Plus className="h-3 w-3 mr-1" />
+                    Add Link
+                  </Button>
+                )}
+              </div>
+              
               <div className="grid md:grid-cols-2 gap-3">
                 <div className="grid gap-1">
                   <Label className="text-sm font-medium">Priority</Label>
@@ -353,19 +532,20 @@ const Create = () => {
               </div>
               
               <div className="grid gap-1">
-                <Label className="text-sm font-medium">Due Date (optional)</Label>
+                <Label className="text-sm font-medium">Due Date {repeatEnabled && <span className="text-red-500">*</span>}</Label>
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button
                       variant="outline"
                       className={cn(
                         "justify-start text-left font-normal rounded-md h-8 text-xs",
-                        !dueDate && "text-muted-foreground"
+                        !dueDate && !repeatEnabled ? "text-muted-foreground" : "",
+                        !dueDate && repeatEnabled ? "text-muted-foreground border-red-400" : ""
                       )}
                       onClick={preventSubmit}
                     >
                       <CalendarIcon className="mr-2 h-3 w-3" />
-                      {dueDate ? format(dueDate, "MMMM d, yyyy") : "Select a due date"}
+                      {dueDate ? format(dueDate, "MMMM d, yyyy") : repeatEnabled ? "Select a due date *" : "Select a due date"}
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0" align="start">
@@ -377,11 +557,137 @@ const Create = () => {
                       disabled={(date) => isBefore(date, today)}
                       classNames={{
                         day: "h-7 w-7 text-xs p-0 font-normal",
-                        caption: "text-sm"
                       }}
                     />
                   </PopoverContent>
                 </Popover>
+                {!dueDate && repeatEnabled && (
+                  <div className="text-xs text-red-500 mt-1">Required for recurring tasks</div>
+                )}
+              </div>
+              
+              {/* Repeat Section */}
+              <div className="grid gap-1 pt-1">
+                <div className="flex items-center justify-between">
+                  <Label className="text-sm font-medium">Repeat</Label>
+                  <div className="flex items-center space-x-2">
+                    <label className="text-xs text-muted-foreground cursor-pointer" htmlFor="repeat-toggle">
+                      {repeatEnabled ? "On" : "Off"}
+                    </label>
+                    <Switch
+                      id="repeat-toggle"
+                      checked={repeatEnabled}
+                      onCheckedChange={() => setRepeatEnabled(!repeatEnabled)}
+                    />
+                  </div>
+                </div>
+                
+                {repeatEnabled && (
+                  <div className="grid gap-2 mt-2 pt-2 border-t border-border/40">
+                    <div className="grid gap-2">
+                      <Label htmlFor="repeat-frequency" className="text-xs mb-1 block">Frequency</Label>
+                      <div className="grid grid-cols-4 gap-1">
+                        <Button
+                          type="button"
+                          variant={repeatFrequency === "daily" ? "default" : "outline"}
+                          className={cn(
+                            "h-7 text-xs rounded-md",
+                            repeatFrequency === "daily" ? "bg-primary text-primary-foreground" : ""
+                          )}
+                          onClick={() => setRepeatFrequency("daily")}
+                        >
+                          Daily
+                        </Button>
+                        <Button
+                          type="button"
+                          variant={repeatFrequency === "weekly" ? "default" : "outline"}
+                          className={cn(
+                            "h-7 text-xs rounded-md",
+                            repeatFrequency === "weekly" ? "bg-primary text-primary-foreground" : ""
+                          )}
+                          onClick={() => setRepeatFrequency("weekly")}
+                        >
+                          Weekly
+                        </Button>
+                        <Button
+                          type="button"
+                          variant={repeatFrequency === "monthly" ? "default" : "outline"}
+                          className={cn(
+                            "h-7 text-xs rounded-md",
+                            repeatFrequency === "monthly" ? "bg-primary text-primary-foreground" : ""
+                          )}
+                          onClick={() => setRepeatFrequency("monthly")}
+                        >
+                          Monthly
+                        </Button>
+                        <Button
+                          type="button"
+                          variant={repeatFrequency === "custom" ? "default" : "outline"}
+                          className={cn(
+                            "h-7 text-xs rounded-md",
+                            repeatFrequency === "custom" ? "bg-primary text-primary-foreground" : ""
+                          )}
+                          onClick={() => setRepeatFrequency("custom")}
+                        >
+                          Custom
+                        </Button>
+                      </div>
+                      
+                      {repeatFrequency === "custom" && (
+                        <div className="flex items-center gap-2 mt-1">
+                          <div className="w-16">
+                            <Input
+                              type="number"
+                              min="1"
+                              max="99"
+                              value={repeatCustomValue}
+                              onChange={(e) => setRepeatCustomValue(parseInt(e.target.value) || 1)}
+                              className="h-7 text-xs rounded-md w-full"
+                            />
+                          </div>
+                          
+                          <Select
+                            value={repeatCustomUnit}
+                            onValueChange={(val) => setRepeatCustomUnit(val as "days" | "weeks" | "months")}
+                          >
+                            <SelectTrigger className="rounded-md h-7 text-xs flex-1">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="days" className="text-xs">Days</SelectItem>
+                              <SelectItem value="weeks" className="text-xs">Weeks</SelectItem>
+                              <SelectItem value="months" className="text-xs">Months</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      )}
+                    </div>
+                    
+                    <div className="text-xs text-muted-foreground mt-1">
+                      <div className="flex items-center">
+                        <span className="bg-primary/10 p-1 rounded-full mr-2">
+                          <RefreshCw className="h-3 w-3 text-primary" />
+                        </span>
+                        <span>
+                          {repeatFrequency === "daily" && "This task will repeat every day"}
+                          {repeatFrequency === "weekly" && "This task will repeat every week"}
+                          {repeatFrequency === "monthly" && "This task will repeat every month"}
+                          {repeatFrequency === "custom" && `This task will repeat every ${repeatCustomValue} ${repeatCustomUnit}`}
+                        </span>
+                      </div>
+                      {dueDate && (
+                        <div className="ml-7 mt-1 text-xs">
+                          First occurrence: {format(dueDate, "MMMM d, yyyy")}
+                        </div>
+                      )}
+                      {!dueDate && (
+                        <div className="ml-7 mt-1 text-xs text-red-500">
+                          Please set a due date for the first occurrence
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
               
               <CardFooter className="px-0 pt-3">

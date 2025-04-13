@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { Todo, Priority, Connection } from "@/types/todo";
+import { Todo, Priority, Connection, TodoLink } from "@/types/todo";
 import { useTodo } from "@/contexts/TodoContext";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
-import { Check, Trash2, Edit, Calendar, AlertCircle, ChevronDown, ChevronUp, Share2, Users, UserPlus, X } from "lucide-react";
+import { Check, Trash2, Edit, Calendar, AlertCircle, ChevronDown, ChevronUp, Share2, Users, UserPlus, X, Link as LinkIcon, ExternalLink } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   DropdownMenu,
@@ -26,6 +26,8 @@ import {
 } from "@/components/ui/tooltip";
 import { CelebrationEffect } from "./CelebrationEffect";
 import { ConnectionsSelector } from "./ConnectionsSelector";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
 
 interface TodoItemProps {
   todo: Todo;
@@ -41,6 +43,7 @@ export function TodoItem({ todo, categoryColor }: TodoItemProps) {
   const [previousCompletionState, setPreviousCompletionState] = useState(todo.completed);
   const [showSharePopup, setShowSharePopup] = useState(false);
   const [showConnectionsSelector, setShowConnectionsSelector] = useState(false);
+  const [showLinksDialog, setShowLinksDialog] = useState(false);
 
   // Track the previous completion state to detect changes
   useEffect(() => {
@@ -118,6 +121,9 @@ export function TodoItem({ todo, categoryColor }: TodoItemProps) {
     ? Math.round((completedSubtasks / todo.subtasks.length) * 100) 
     : todo.completed ? 100 : 0;
 
+  // Check if todo has links
+  const hasLinks = todo.links && todo.links.length > 0;
+
   return (
     <>
       <div
@@ -160,6 +166,31 @@ export function TodoItem({ todo, categoryColor }: TodoItemProps) {
               </h3>
               
               <div className="flex gap-1">
+                {/* Links indicator */}
+                {hasLinks && (
+                  <TooltipProvider>
+                    <Tooltip delayDuration={300}>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className={cn(
+                            "h-6 w-6 p-0 text-primary hover:text-primary/80 hover:bg-primary/10 transition-all rounded-full",
+                            isHovered ? "opacity-100" : "opacity-80"
+                          )}
+                          onClick={() => setShowLinksDialog(true)}
+                        >
+                          <LinkIcon className="h-3.5 w-3.5" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom" className="text-xs font-medium">
+                        <div className="font-semibold">Links ({todo.links?.length})</div>
+                        <div className="mt-1">Click to view</div>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                )}
+
                 {(hasSubtasks || todo.completed) && (
                   <TooltipProvider>
                     <Tooltip delayDuration={300}>
@@ -287,6 +318,16 @@ export function TodoItem({ todo, categoryColor }: TodoItemProps) {
                 </div>
               )}
               
+              {hasLinks && (
+                <div 
+                  className="flex items-center gap-1 text-primary hover:text-primary/80 cursor-pointer"
+                  onClick={() => setShowLinksDialog(true)}
+                >
+                  <LinkIcon className="h-3 w-3" />
+                  <span>{todo.links?.length} link{todo.links?.length !== 1 ? 's' : ''}</span>
+                </div>
+              )}
+              
               {todo.priority === "high" && !todo.completed && (
                 <div className="flex items-center gap-1 text-arc-red animate-pulse">
                   <AlertCircle className="h-3 w-3" />
@@ -355,6 +396,44 @@ export function TodoItem({ todo, categoryColor }: TodoItemProps) {
           mode="edit"
         />
       )}
+
+      {/* Links Dialog */}
+      <Dialog open={showLinksDialog} onOpenChange={setShowLinksDialog}>
+        <DialogContent className="max-w-md">
+          <div className="flex items-center gap-2 mb-4">
+            <div className="bg-primary/10 p-2 rounded-full">
+              <LinkIcon className="h-4 w-4 text-primary" />
+            </div>
+            <div>
+              <h3 className="font-medium text-lg">Links</h3>
+              <p className="text-sm text-muted-foreground">Resources related to this task</p>
+            </div>
+          </div>
+          
+          <div className="grid gap-3">
+            {todo.links?.map((link) => (
+              <a
+                key={link.id}
+                href={link.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-between p-3 rounded-md border border-border/50 hover:bg-accent/20 transition-colors group"
+              >
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="bg-primary/10 p-2 rounded-full shrink-0">
+                    <LinkIcon className="h-3.5 w-3.5 text-primary" />
+                  </div>
+                  <div className="overflow-hidden">
+                    <div className="font-medium truncate">{link.title}</div>
+                    <div className="text-xs text-muted-foreground truncate">{link.url}</div>
+                  </div>
+                </div>
+                <ExternalLink className="h-3.5 w-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+              </a>
+            ))}
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <CelebrationEffect
         isVisible={showCelebration}
