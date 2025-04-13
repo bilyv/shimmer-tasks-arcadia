@@ -109,7 +109,7 @@
   }
   
   .arc-gradient {
-    @apply bg-gradient-to-br from-arc-purple/90 to-arc-blue/80;
+    @apply bg-gradient-to-br from-arc-purple to-arc-blue text-white;
   }
   
   .shimmer {
@@ -142,5 +142,13 @@
   
   .category-indicator {
     @apply w-1.5 h-6 rounded-full absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1/2;
+  }
+
+  .text-gradient-animated {
+    @apply bg-gradient-animated bg-clip-text text-transparent font-semibold bg-300% animate-gradient-shift;
+  }
+
+  .arc-gradient {
+    @apply bg-gradient-to-br from-arc-purple to-arc-blue text-white;
   }
 }

@@ -1,4 +1,3 @@
-
 import type { Config } from "tailwindcss";
 
 export default {
@@ -68,6 +67,7 @@ export default {
 					"light-purple": "#D6BCFA",
 					"dark-purple": "#6E59A5",
 					blue: "#33C3F0",
+					cyan: "#67e8f9",
 					green: "#10B981",
 					yellow: "#FBBF24",
 					red: "#EF4444",
@@ -122,6 +122,29 @@ export default {
 				'shimmer': {
 					'0%': { backgroundPosition: '-200% 0' },
 					'100%': { backgroundPosition: '200% 0' }
+				},
+				'float': {
+					'0%': { transform: 'translateY(0px)' },
+					'50%': { transform: 'translateY(-5px)' },
+					'100%': { transform: 'translateY(0px)' }
+				},
+				'float-slow': {
+					'0%': { transform: 'translateY(0px) rotate(0deg)' },
+					'50%': { transform: 'translateY(-7px) rotate(5deg)' },
+					'100%': { transform: 'translateY(0px) rotate(0deg)' }
+				},
+				'bounce-slow': {
+					'0%, 100%': { transform: 'translateY(0)' },
+					'50%': { transform: 'translateY(-10%)' }
+				},
+				'spin-slow': {
+					'from': { transform: 'rotate(0deg)' },
+					'to': { transform: 'rotate(360deg)' }
+				},
+				'gradient-shift': {
+					'0%': { backgroundPosition: '0% 50%' },
+					'50%': { backgroundPosition: '100% 50%' },
+					'100%': { backgroundPosition: '0% 50%' }
 				}
 			},
 			animation: {
@@ -134,7 +157,21 @@ export default {
 				'bounce-in': 'bounce-in 0.4s ease-out',
 				'check-mark': 'check-mark 0.3s ease-out',
 				'progress-fill': 'progress-fill 1s ease-out forwards',
-				'shimmer': 'shimmer 2s infinite linear'
+				'shimmer': 'shimmer 2s infinite linear',
+				'float': 'float 3s ease-in-out infinite',
+				'float-slow': 'float-slow 5s ease-in-out infinite',
+				'bounce-slow': 'bounce-slow 2s ease-in-out infinite',
+				'spin-slow': 'spin-slow 8s linear infinite',
+				'gradient-shift': 'gradient-shift 3s ease infinite'
+			},
+			textColor: {
+				'gradient-animated': 'transparent',
+			},
+			backgroundImage: theme => ({
+				'gradient-animated': 'linear-gradient(to right, #9b87f5, #33C3F0, #9b87f5)',
+			}),
+			backgroundSize: {
+				'300%': '300%',
 			}
 		}
 	},
