@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { useTodo } from "@/contexts/TodoContext";
 import { ChevronDown, Check, FolderIcon } from "lucide-react";
@@ -12,9 +11,10 @@ import {
 interface CategorySelectProps {
   selectedCategory: string | null;
   onCategoryChange: (categoryId: string | null) => void;
+  isCompact?: boolean;
 }
 
-export function CategorySelect({ selectedCategory, onCategoryChange }: CategorySelectProps) {
+export function CategorySelect({ selectedCategory, onCategoryChange, isCompact = false }: CategorySelectProps) {
   const { categories, getTodosByCategory } = useTodo();
   
   // Get the selected category name or "All Tasks" if none is selected
@@ -25,12 +25,12 @@ export function CategorySelect({ selectedCategory, onCategoryChange }: CategoryS
   };
 
   return (
-    <div className="w-full mb-4">
+    <div className={`w-full ${isCompact ? '' : 'mb-4'}`}>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button 
             variant="outline" 
-            className="w-full md:w-auto justify-between border rounded-xl py-2.5 px-4 text-base font-medium transition-all duration-200 hover:bg-accent"
+            className={`${isCompact ? 'w-auto' : 'w-full md:w-auto'} justify-between border rounded-xl py-2.5 px-4 text-base font-medium transition-all duration-200 hover:bg-accent`}
           >
             <div className="flex items-center gap-2">
               <span
@@ -41,12 +41,17 @@ export function CategorySelect({ selectedCategory, onCategoryChange }: CategoryS
                     : "" 
                 }}
               />
-              {getSelectedCategoryName()}
-              <span className="ml-1 text-xs opacity-70 px-1.5 py-0.5 rounded-full bg-muted">
-                {selectedCategory 
-                  ? getTodosByCategory(selectedCategory).length 
-                  : "All"}
-              </span>
+              {isCompact ? '' : getSelectedCategoryName()}
+              {!isCompact && (
+                <span className="ml-1 text-xs opacity-70 px-1.5 py-0.5 rounded-full bg-muted">
+                  {selectedCategory 
+                    ? getTodosByCategory(selectedCategory).length 
+                    : "All"}
+                </span>
+              )}
+              {isCompact && (
+                <FolderIcon className="h-4 w-4" />
+              )}
             </div>
             <ChevronDown className="ml-2 h-4 w-4 opacity-50" />
           </Button>

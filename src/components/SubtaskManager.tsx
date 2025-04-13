@@ -1,13 +1,18 @@
-
 import { useState } from "react";
 import { SubTask } from "@/types/todo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
-import { X, Plus } from "lucide-react";
+import { X, Plus, Lock } from "lucide-react";
 import { useTodo } from "@/contexts/TodoContext";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface SubtaskManagerProps {
   todoId: string;
@@ -32,42 +37,86 @@ export function SubtaskManager({ todoId, subtasks, isEditing = false }: SubtaskM
     }
   };
 
+  // Determine if a subtask is locked based on previous subtasks completion status
+  const isSubtaskLocked = (index: number) => {
+    if (index === 0) return false; // First subtask is never locked
+    
+    // Check if all previous subtasks are completed
+    for (let i = 0; i < index; i++) {
+      if (!subtasks[i].completed) {
+        return true;
+      }
+    }
+    return false;
+  };
+
   return (
     <div className="space-y-3">
       {subtasks.length > 0 && (
         <div className="flex flex-wrap gap-2 mb-2">
-          {subtasks.map((subtask) => (
-            <div key={subtask.id} className="flex items-center">
-              <Checkbox
-                checked={subtask.completed}
-                onCheckedChange={() => toggleSubtaskCompletion(todoId, subtask.id)}
-                className={cn("mr-2 transition-all duration-300")}
-              />
-              <Badge 
-                variant="secondary"
-                className={cn(
-                  "px-2 py-1 flex items-center gap-1 text-xs",
-                  subtask.completed ? "opacity-60" : ""
-                )}
-              >
-                <span className={cn(
-                  subtask.completed ? "line-through text-muted-foreground" : ""
-                )}>
-                  {subtask.title}
-                </span>
-                {isEditing && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-4 w-4 ml-1 p-0"
-                    onClick={() => deleteSubtask(todoId, subtask.id)}
-                  >
-                    <X className="h-3 w-3" />
-                  </Button>
-                )}
-              </Badge>
-            </div>
-          ))}
+          {subtasks.map((subtask, index) => {
+            const locked = isSubtaskLocked(index);
+            return (
+              <div key={subtask.id} className="flex items-center">
+                <TooltipProvider>
+                  <Tooltip delayDuration={300}>
+                    <TooltipTrigger asChild>
+                      <div className="relative mr-2">
+                        <Checkbox
+                          checked={subtask.completed}
+                          onCheckedChange={() => {
+                            if (!locked) {
+                              toggleSubtaskCompletion(todoId, subtask.id);
+                            }
+                          }}
+                          className={cn(
+                            "transition-all duration-300",
+                            locked ? "opacity-50 cursor-not-allowed" : ""
+                          )}
+                          disabled={locked}
+                        />
+                        {locked && (
+                          <div className="absolute -top-2 -right-2 bg-secondary rounded-full p-0.5 shadow-sm">
+                            <Lock className="h-2.5 w-2.5 text-muted-foreground" />
+                          </div>
+                        )}
+                      </div>
+                    </TooltipTrigger>
+                    {locked && (
+                      <TooltipContent side="top" className="text-xs">
+                        <p>Complete previous subtasks first</p>
+                      </TooltipContent>
+                    )}
+                  </Tooltip>
+                </TooltipProvider>
+                <Badge 
+                  variant="secondary"
+                  className={cn(
+                    "px-2 py-1 flex items-center gap-1 text-xs",
+                    subtask.completed ? "opacity-60" : "",
+                    locked ? "bg-muted/50" : ""
+                  )}
+                >
+                  <span className={cn(
+                    subtask.completed ? "line-through text-muted-foreground" : "",
+                    locked ? "text-muted-foreground" : ""
+                  )}>
+                    {subtask.title}
+                  </span>
+                  {isEditing && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-4 w-4 ml-1 p-0"
+                      onClick={() => deleteSubtask(todoId, subtask.id)}
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
+                  )}
+                </Badge>
+              </div>
+            );
+          })}
         </div>
       )}
       

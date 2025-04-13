@@ -1,4 +1,3 @@
-
 import { Card, CardContent } from "@/components/ui/card";
 import { useTodo } from "@/contexts/TodoContext";
 import { CheckCircle, Clock, AlertCircle } from "lucide-react";
@@ -25,7 +24,7 @@ export function StatsDisplay() {
   }, []);
   
   return (
-    <div className="grid grid-cols-3 gap-3 transform transition-all duration-500">
+    <div className="grid grid-cols-3 gap-3 transform transition-all duration-500 mb-4">
       <Card className={cn(
         "overflow-hidden rounded-xl shadow-sm hover:shadow-md transition-all duration-300",
         "transform h-auto",
