@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Todo, Priority } from "@/types/todo";
 import { useTodo } from "@/contexts/TodoContext";
 import { format } from "date-fns";
@@ -24,6 +24,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { CelebrationEffect } from "./CelebrationEffect";
 
 interface TodoItemProps {
   todo: Todo;
@@ -35,6 +36,17 @@ export function TodoItem({ todo, categoryColor }: TodoItemProps) {
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
+  const [showCelebration, setShowCelebration] = useState(false);
+  const [previousCompletionState, setPreviousCompletionState] = useState(todo.completed);
+
+  // Track the previous completion state to detect changes
+  useEffect(() => {
+    // If task was just completed, show celebration
+    if (todo.completed && !previousCompletionState) {
+      setShowCelebration(true);
+    }
+    setPreviousCompletionState(todo.completed);
+  }, [todo.completed, previousCompletionState]);
 
   const handleToggle = () => {
     toggleTodoCompletion(todo.id);
@@ -256,13 +268,18 @@ export function TodoItem({ todo, categoryColor }: TodoItemProps) {
       </div>
       
       {showEditDialog && (
-        <TodoDialog
-          mode="edit"
+        <TodoDialog 
+          isOpen={showEditDialog} 
+          setIsOpen={setShowEditDialog}
           todo={todo}
-          open={showEditDialog}
-          onOpenChange={setShowEditDialog}
+          mode="edit"
         />
       )}
+
+      <CelebrationEffect
+        isVisible={showCelebration}
+        onComplete={() => setShowCelebration(false)}
+      />
     </>
   );
 }
