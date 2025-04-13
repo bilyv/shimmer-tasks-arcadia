@@ -1,30 +1,38 @@
+import { z } from "zod";
 
-export type Priority = "high" | "medium" | "low";
+export type Priority = "low" | "medium" | "high";
 
-export type Category = {
-  id: string;
-  name: string;
-  color: string;
-};
-
-export type SubTask = {
+export interface SubTask {
   id: string;
   title: string;
   completed: boolean;
-};
+}
 
-export type Todo = {
+export interface Connection {
+  id: string;
+  name: string;
+  avatar?: string;
+  email: string;
+}
+
+export interface Todo {
   id: string;
   title: string;
   description: string;
   completed: boolean;
   createdAt: Date;
   updatedAt: Date;
-  dueDate: Date | null;
   priority: Priority;
   categoryId: string;
+  dueDate: Date | null;
   subtasks: SubTask[];
-};
+}
+
+export interface Category {
+  id: string;
+  name: string;
+  color: string;
+}
 
 export const DEFAULT_CATEGORIES: Category[] = [
   { id: "personal", name: "Personal", color: "#9b87f5" },
