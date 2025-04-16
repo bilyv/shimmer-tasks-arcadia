@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { useTodo } from "@/contexts/TodoContext";
-import { ChevronDown, Check, FolderIcon } from "lucide-react";
+import { ChevronDown, Check, FolderIcon, ListFilter } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -49,11 +49,8 @@ export function CategorySelect({ selectedCategory, onCategoryChange, isCompact =
                     : "All"}
                 </span>
               )}
-              {isCompact && (
-                <FolderIcon className="h-4 w-4" />
-              )}
             </div>
-            <ChevronDown className="ml-2 h-4 w-4 opacity-50" />
+            <ListFilter className="ml-2 h-4 w-4 opacity-50" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start" className="w-[200px] p-2 rounded-xl">

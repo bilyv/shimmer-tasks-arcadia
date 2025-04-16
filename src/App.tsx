@@ -14,6 +14,7 @@ import Schedule from "./pages/Schedule";
 import Profile from "./pages/Profile";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
+import LearnPurpose from "./pages/LearnPurpose";
 
 const queryClient = new QueryClient();
 
@@ -54,6 +55,11 @@ const App = () => (
                 <Route path="/profile" element={
                   <ProtectedRoute>
                     <Profile />
+                  </ProtectedRoute>
+                } />
+                <Route path="/learn-purpose" element={
+                  <ProtectedRoute>
+                    <LearnPurpose />
                   </ProtectedRoute>
                 } />
                 

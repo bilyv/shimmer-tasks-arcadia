@@ -20,16 +20,17 @@ interface TodoDialogProps {
   todo?: Todo;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  defaultDueDate?: Date;
 }
 
-export function TodoDialog({ mode, todo, open, onOpenChange }: TodoDialogProps) {
+export function TodoDialog({ mode, todo, open, onOpenChange, defaultDueDate }: TodoDialogProps) {
   const { addTodo, updateTodo, categories, addSubtask, todos } = useTodo();
   
   const [title, setTitle] = useState(todo?.title || "");
   const [description, setDescription] = useState(todo?.description || "");
   const [priority, setPriority] = useState<Priority>(todo?.priority || "medium");
   const [categoryId, setCategoryId] = useState(todo?.categoryId || categories[0]?.id || "");
-  const [dueDate, setDueDate] = useState<Date | null>(todo?.dueDate || null);
+  const [dueDate, setDueDate] = useState<Date | null>(todo?.dueDate || defaultDueDate || null);
   const [subtasks, setSubtasks] = useState<SubTask[]>(todo?.subtasks || []);
   const [newSubtaskTitle, setNewSubtaskTitle] = useState("");
   
@@ -241,23 +242,23 @@ export function TodoDialog({ mode, todo, open, onOpenChange }: TodoDialogProps) 
                 <Badge 
                   key={link.id} 
                   variant="secondary"
-                  className="px-2 py-0.5 flex items-center gap-1 text-xs"
+                  className="px-2 py-0.5 flex items-center gap-1 text-xs max-w-full"
                 >
                   <a 
                     href={link.url} 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="flex items-center gap-1 hover:underline"
+                    className="flex items-center gap-1 hover:underline break-words whitespace-normal overflow-hidden text-ellipsis"
                     onClick={(e) => e.stopPropagation()}
                   >
-                    <LinkIcon className="h-2.5 w-2.5 text-primary" />
-                    {link.title}
+                    <LinkIcon className="h-2.5 w-2.5 text-primary shrink-0" />
+                    <span className="break-words whitespace-normal overflow-hidden">{link.title}</span>
                   </a>
                   <Button
                     type="button"
                     variant="ghost"
                     size="icon"
-                    className="h-3 w-3 ml-1 p-0"
+                    className="h-3 w-3 ml-1 p-0 shrink-0"
                     onClick={(e) => {
                       e.preventDefault();
                       handleDeleteLink(link.id);

@@ -23,7 +23,7 @@ interface TodoContextType {
   ) => Todo[];
   getTodosByCategory: (categoryId: string) => Todo[];
   getCompletionRate: () => number;
-  getTodoCountForDate: (date: Date) => number;
+  getTodoCountForDate: (date: Date, filterFn?: (todo: Todo) => boolean) => number;
 }
 
 // Create the context
@@ -266,10 +266,19 @@ export const TodoProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   // Get todo count for a specific date
-  const getTodoCountForDate = (date: Date): number => {
+  const getTodoCountForDate = (date: Date, filterFn?: (todo: Todo) => boolean): number => {
     return todos.filter((todo) => {
       if (!todo.dueDate) return false;
-      return format(todo.dueDate, 'yyyy-MM-dd') === format(date, 'yyyy-MM-dd');
+      
+      // First check if the date matches
+      const dateMatches = format(todo.dueDate, 'yyyy-MM-dd') === format(date, 'yyyy-MM-dd');
+      
+      // Then apply any additional filtering if a filter function was provided
+      if (dateMatches && filterFn) {
+        return filterFn(todo);
+      }
+      
+      return dateMatches;
     }).length;
   };
 

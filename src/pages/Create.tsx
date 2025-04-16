@@ -1,7 +1,7 @@
 import { Layout } from "@/components/Layout";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTodo } from "@/contexts/TodoContext";
-import { Todo, Priority, SubTask } from "@/types/todo";
+import { Todo, Priority, SubTask, TodoLink } from "@/types/todo";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -19,9 +19,16 @@ import { toast } from "@/components/ui/use-toast";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
+import { useLocation, useNavigate } from "react-router-dom";
 
 const Create = () => {
-  const { addTodo, categories, addSubtask } = useTodo();
+  const { addTodo, updateTodo, categories, addSubtask } = useTodo();
+  const location = useLocation();
+  const navigate = useNavigate();
+  
+  // Check if we're in edit mode
+  const isEditMode = location.state?.editMode === true;
+  const editTodoId = location.state?.todoId;
   
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -32,7 +39,7 @@ const Create = () => {
   const [newSubtaskTitle, setNewSubtaskTitle] = useState("");
   
   // New state for links
-  const [links, setLinks] = useState<{id: string, url: string, title: string}[]>([]);
+  const [links, setLinks] = useState<TodoLink[]>([]);
   const [newLinkUrl, setNewLinkUrl] = useState("");
   const [newLinkTitle, setNewLinkTitle] = useState("");
   const [showLinkInput, setShowLinkInput] = useState(false);
@@ -52,6 +59,50 @@ const Create = () => {
   const [repeatCustomUnit, setRepeatCustomUnit] = useState<"days" | "weeks" | "months">("weeks");
   
   const today = startOfDay(new Date());
+  
+  // Load todo data if in edit mode
+  useEffect(() => {
+    if (isEditMode) {
+      try {
+        const editTodoData = localStorage.getItem('editTodoData');
+        if (editTodoData) {
+          const todoData = JSON.parse(editTodoData) as Todo;
+          
+          setTitle(todoData.title || "");
+          setDescription(todoData.description || "");
+          setPriority(todoData.priority || "medium");
+          setCategoryId(todoData.categoryId || categories[0]?.id || "");
+          
+          // Handle date conversion
+          if (todoData.dueDate) {
+            setDueDate(new Date(todoData.dueDate));
+          }
+          
+          // Handle subtasks
+          if (todoData.subtasks && Array.isArray(todoData.subtasks)) {
+            setSubtasks(todoData.subtasks);
+          }
+          
+          // Handle links
+          if (todoData.links && Array.isArray(todoData.links)) {
+            setLinks(todoData.links);
+          }
+        }
+      } catch (error) {
+        console.error("Error loading todo data:", error);
+        toast({
+          title: "Error",
+          description: "Could not load task data for editing",
+          variant: "destructive",
+        });
+      }
+    }
+    
+    // Clean up localStorage when component unmounts
+    return () => {
+      localStorage.removeItem('editTodoData');
+    };
+  }, [isEditMode, categories]);
   
   const handleAddSubtask = () => {
     if (newSubtaskTitle.trim()) {
@@ -127,21 +178,51 @@ const Create = () => {
       return;
     }
     
-    const newTodo = {
+    const todoData = {
       title,
       description,
       priority,
       categoryId,
       dueDate,
+      subtasks,
       links: links.length > 0 ? links : undefined,
     };
     
-    const newTodoId = addTodo(newTodo);
+    let successMessage = "";
     
-    // Add subtasks after todo creation
-    subtasks.forEach(subtask => {
-      addSubtask(newTodoId, subtask.title);
-    });
+    if (isEditMode && editTodoId) {
+      // Update existing todo
+      updateTodo(editTodoId, todoData);
+      successMessage = "Task updated successfully!";
+      
+      // Navigate back after update
+      navigate('/');
+    } else {
+      // Create new todo
+      const newTodoId = addTodo(todoData);
+      
+      // Add subtasks after todo creation (for backward compatibility)
+      if (!todoData.subtasks) {
+        subtasks.forEach(subtask => {
+          addSubtask(newTodoId, subtask.title);
+        });
+      }
+      
+      successMessage = "Task created successfully!";
+      
+      // Reset form for new task
+      setTitle("");
+      setDescription("");
+      setPriority("medium");
+      setCategoryId(categories[0]?.id || "");
+      setDueDate(null);
+      setSubtasks([]);
+      setLinks([]);
+      setRepeatEnabled(false);
+      setRepeatFrequency("weekly");
+      setRepeatCustomValue(1);
+      setRepeatCustomUnit("weeks");
+    }
     
     // Handle repetition
     if (repeatEnabled && dueDate) {
@@ -163,27 +244,14 @@ const Create = () => {
       }
       
       toast({
-        title: "Recurring task created",
+        title: isEditMode ? "Recurring task updated" : "Recurring task created",
         description: `This task will repeat ${repeatDescription}, starting on ${format(dueDate, "MMM d, yyyy")}`,
       });
     }
     
-    // Reset form
-    setTitle("");
-    setDescription("");
-    setPriority("medium");
-    setCategoryId(categories[0]?.id || "");
-    setDueDate(null);
-    setSubtasks([]);
-    setLinks([]);
-    setRepeatEnabled(false);
-    setRepeatFrequency("weekly");
-    setRepeatCustomValue(1);
-    setRepeatCustomUnit("weeks");
-    
     toast({
-      title: "Task created",
-      description: "Your task has been created successfully!",
+      title: isEditMode ? "Task updated" : "Task created",
+      description: successMessage,
     });
   };
   
@@ -286,33 +354,37 @@ const Create = () => {
             <Sparkles className="h-5 w-5 text-primary" />
           </div>
           <div className="ml-3">
-            <h1 className="text-xl font-bold">Create New Task</h1>
-            <p className="text-sm text-muted-foreground">Add details for your new task</p>
+            <h1 className="text-xl font-bold">{isEditMode ? "Edit Task" : "Create New Task"}</h1>
+            <p className="text-sm text-muted-foreground">
+              {isEditMode ? "Update details for your task" : "Add details for your new task"}
+            </p>
           </div>
         </div>
         
-        {/* Create options */}
-        <div className="flex flex-wrap items-center gap-2 mb-4">
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="h-8 gap-1.5 bg-background/80"
-            onClick={() => setShowOcrDialog(true)}
-          >
-            <ScanLine className="h-3.5 w-3.5 text-primary" />
-            <span className="text-xs">Create with OCR</span>
-          </Button>
-          
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="h-8 gap-1.5 bg-background/80"
-            onClick={() => setShowAiDialog(true)}
-          >
-            <BrainCircuit className="h-3.5 w-3.5 text-purple-500" />
-            <span className="text-xs">Create with AI</span>
-          </Button>
-        </div>
+        {/* Create options - hide when in edit mode */}
+        {!isEditMode && (
+          <div className="flex flex-wrap items-center gap-2 mb-4">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="h-8 gap-1.5 bg-background/80"
+              onClick={() => setShowOcrDialog(true)}
+            >
+              <ScanLine className="h-3.5 w-3.5 text-primary" />
+              <span className="text-xs">Create with OCR</span>
+            </Button>
+            
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="h-8 gap-1.5 bg-background/80"
+              onClick={() => setShowAiDialog(true)}
+            >
+              <BrainCircuit className="h-3.5 w-3.5 text-purple-500" />
+              <span className="text-xs">Create with AI</span>
+            </Button>
+          </div>
+        )}
         
         <Card className="bg-card/50 backdrop-blur-sm border-border/50">
           <CardHeader className="pb-2 pt-3">
@@ -404,23 +476,23 @@ const Create = () => {
                     <Badge 
                       key={link.id} 
                       variant="secondary"
-                      className="px-2 py-0.5 flex items-center gap-1 text-xs"
+                      className="px-2 py-0.5 flex items-center gap-1 text-xs max-w-full"
                     >
                       <a 
                         href={link.url} 
                         target="_blank" 
                         rel="noopener noreferrer"
-                        className="flex items-center gap-1 hover:underline"
+                        className="flex items-center gap-1 hover:underline break-words whitespace-normal overflow-hidden text-ellipsis"
                         onClick={(e) => e.stopPropagation()}
                       >
-                        <LinkIcon className="h-2.5 w-2.5 text-primary" />
-                        {link.title}
+                        <LinkIcon className="h-2.5 w-2.5 text-primary shrink-0" />
+                        <span className="break-words whitespace-normal overflow-hidden">{link.title}</span>
                       </a>
                       <Button
                         type="button"
                         variant="ghost"
                         size="icon"
-                        className="h-3 w-3 ml-1 p-0"
+                        className="h-3 w-3 ml-1 p-0 shrink-0"
                         onClick={() => handleDeleteLink(link.id)}
                       >
                         <X className="h-2 w-2" />
@@ -691,9 +763,21 @@ const Create = () => {
               </div>
               
               <CardFooter className="px-0 pt-3">
-                <Button type="submit" className="w-full arc-gradient hover:opacity-90 h-8 text-sm">
-                  <Check className="mr-2 h-3 w-3" /> Create Task
-                </Button>
+                <div className="flex gap-2 justify-end">
+                  <Button 
+                    variant="outline" 
+                    type="button"
+                    onClick={() => navigate('/')}
+                  >
+                    Cancel
+                  </Button>
+                  <Button 
+                    className="arc-gradient hover:opacity-90" 
+                    onClick={handleSubmit}
+                  >
+                    {isEditMode ? "Save Changes" : "Create Task"}
+                  </Button>
+                </div>
               </CardFooter>
             </form>
           </CardContent>

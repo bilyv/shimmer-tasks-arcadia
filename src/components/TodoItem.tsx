@@ -28,6 +28,7 @@ import { CelebrationEffect } from "./CelebrationEffect";
 import { ConnectionsSelector } from "./ConnectionsSelector";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
+import { useNavigate } from "react-router-dom";
 
 interface TodoItemProps {
   todo: Todo;
@@ -44,6 +45,7 @@ export function TodoItem({ todo, categoryColor }: TodoItemProps) {
   const [showSharePopup, setShowSharePopup] = useState(false);
   const [showConnectionsSelector, setShowConnectionsSelector] = useState(false);
   const [showLinksDialog, setShowLinksDialog] = useState(false);
+  const navigate = useNavigate();
 
   // Track the previous completion state to detect changes
   useEffect(() => {
@@ -123,6 +125,13 @@ export function TodoItem({ todo, categoryColor }: TodoItemProps) {
 
   // Check if todo has links
   const hasLinks = todo.links && todo.links.length > 0;
+
+  const handleEdit = () => {
+    // Store the todo data in localStorage to access it in the Create page
+    localStorage.setItem('editTodoData', JSON.stringify(todo));
+    // Navigate to the Create page
+    navigate('/create', { state: { editMode: true, todoId: todo.id } });
+  };
 
   return (
     <>
@@ -261,7 +270,7 @@ export function TodoItem({ todo, categoryColor }: TodoItemProps) {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-36">
-                    <DropdownMenuItem onClick={() => setShowEditDialog(true)}>
+                    <DropdownMenuItem onClick={handleEdit}>
                       <Edit className="mr-2 h-4 w-4" />
                       Edit
                     </DropdownMenuItem>
@@ -388,15 +397,6 @@ export function TodoItem({ todo, categoryColor }: TodoItemProps) {
         </div>
       )}
       
-      {showEditDialog && (
-        <TodoDialog 
-          open={showEditDialog} 
-          onOpenChange={setShowEditDialog}
-          todo={todo}
-          mode="edit"
-        />
-      )}
-
       {/* Links Dialog */}
       <Dialog open={showLinksDialog} onOpenChange={setShowLinksDialog}>
         <DialogContent className="max-w-md">
@@ -419,16 +419,16 @@ export function TodoItem({ todo, categoryColor }: TodoItemProps) {
                 rel="noopener noreferrer"
                 className="flex items-center justify-between p-3 rounded-md border border-border/50 hover:bg-accent/20 transition-colors group"
               >
-                <div className="flex items-center gap-3 min-w-0">
+                <div className="flex items-center gap-3 min-w-0 w-full">
                   <div className="bg-primary/10 p-2 rounded-full shrink-0">
                     <LinkIcon className="h-3.5 w-3.5 text-primary" />
                   </div>
-                  <div className="overflow-hidden">
-                    <div className="font-medium truncate">{link.title}</div>
-                    <div className="text-xs text-muted-foreground truncate">{link.url}</div>
+                  <div className="overflow-hidden w-full">
+                    <div className="font-medium break-words whitespace-normal">{link.title}</div>
+                    <div className="text-xs text-muted-foreground break-words whitespace-normal">{link.url}</div>
                   </div>
                 </div>
-                <ExternalLink className="h-3.5 w-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                <ExternalLink className="h-3.5 w-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0 ml-2" />
               </a>
             ))}
           </div>
