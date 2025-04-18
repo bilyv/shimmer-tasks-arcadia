@@ -1,0 +1,14 @@
+-Use TypeScript for all development.​
+
+-first understand the request, second break it into manageable instructions and carry out every instruction.
+
+-Use modern design components to enhance responsiveness and look beautifully clean.
+
+-Follow clean code principles to maintain readability and maintainability.​
+
+-Prefer async/await over callbacks for asynchronous operations.​
+
+-Implement comprehensive error handling throughout the codebase.​
+
+-use bun package manager instead of npm package manager using bun instead of npm.
+

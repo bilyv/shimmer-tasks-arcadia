@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
-import { Home, PlusCircle, Users, Calendar } from "lucide-react";
+import { Home, PlusCircle, Users, Calendar, BookOpen } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 
 type TabItem = {
@@ -19,6 +19,7 @@ export function BottomNav() {
     "/create": "create",
     "/connections": "connections",
     "/schedule": "schedule",
+    "/learn-purpose": "learn",
   };
 
   // Update active tab when location changes
@@ -46,6 +47,11 @@ export function BottomNav() {
       path: "/schedule",
     },
     {
+      icon: <BookOpen className="h-5 w-5" />,
+      label: "Learn",
+      path: "/learn-purpose",
+    },
+    {
       icon: <Users className="h-5 w-5" />,
       label: "Connections",
       path: "/connections",
@@ -54,7 +60,7 @@ export function BottomNav() {
 
   return (
     <div className="fixed bottom-0 left-0 z-50 w-full h-16 bg-background/90 backdrop-blur-md border-t border-border/40 md:hidden">
-      <div className="grid h-full grid-cols-4">
+      <div className="grid h-full grid-cols-5">
         {tabs.map((tab) => (
           <Link
             key={tab.label}
